@@ -1,29 +1,65 @@
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
+<head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="utf-8">
     <title>ようこそ、jigインターンへ！</title>
     <link rel="icon" href="data:image/x-icon;,">
     <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-      }
-      html, body {
-        height: 100vh;
-        width: 100%;
-      }
-      body {
-        display: grid;
-        place-content: center;
-      }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        html, body {
+            height: 100vh;
+            width: 100%;
+        }
+
+        body {
+            display: grid;
+            place-content: center;
+        }
     </style>
     <script type="module">
-      const message = await fetch("/welcome-message")
-      document.querySelector("body").innerHTML = `<h1>${await message.text()}</h1>`
+        // const message = await fetch("/welcome-message")
+        // document.querySelector("body").innerHTML = `<h1>${await message.text()}</h1>`
+        async function sendJson() {
+            const url = "http://localhost:8000/";
+            const data = {
+                name: "Deno",
+                message: "This is a JSON test!",
+            };
+            testtext.innerText = "loading...";
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                testtext.innerText = "loading2...";
+                if (response.ok) {
+                    const responseJson = await response.text();
+                    console.log("Response from server:", responseJson);
+                    testtext.innerText = responseJson;
+                } else {
+                    console.error("Server returned an error:", response.statusText);
+                    testtext.innerText = await response.statusText;
+                }
+            } catch (error) {
+                console.error("Failed to send request:", error);
+                testtext.innerText = "muri..." + error;
+                // testtext.innerText = 'muri';
+            }
+        }
+        json.onclick = async () => {sendJson()};
     </script>
-  </head>
-  <body>
-  </body>
+</head>
+<body>
+    <button id="json" type="button">てそと</button>
+    <h1 id="testtext"></h1>
+</body>
 </html>
