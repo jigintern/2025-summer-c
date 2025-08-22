@@ -46,6 +46,14 @@ serve(async (req: Request) => {
             "test!"
         )
     }
+    if(req.method === "GET" && url.pathname === "/testJson") {
+        return new Response(
+            JSON.stringify({
+                test: "test",
+                data: ["1",2,2.5]
+            })
+        )
+    }
     // それ以外のリクエストは404 Not Found
     return new Response("Not Found", { status: 404 });
 

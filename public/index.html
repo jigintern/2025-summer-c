@@ -17,8 +17,7 @@
         }
 
         body {
-            display: grid;
-            place-content: center;
+            /*display: grid;*/
         }
     </style>
     <script type="module">
@@ -30,7 +29,7 @@
                 name: "Deno",
                 message: "This is a JSON test!",
             };
-            testtext.innerText = "loading...";
+            testText.innerText = "loading...";
             try {
                 const response = await fetch(url, {
                     method: "POST",
@@ -40,26 +39,32 @@
                     body: JSON.stringify(data),
                 });
 
-                testtext.innerText = "loading2...";
+                testText.innerText = "loading2...";
                 if (response.ok) {
                     const responseJson = await response.text();
                     console.log("Response from server:", responseJson);
-                    testtext.innerText = responseJson;
+                    testText.innerText = responseJson;
                 } else {
                     console.error("Server returned an error:", response.statusText);
-                    testtext.innerText = await response.statusText;
+                    testText.innerText = await response.statusText;
                 }
             } catch (error) {
                 console.error("Failed to send request:", error);
-                testtext.innerText = "muri..." + error;
+                testText.innerText = "muri..." + error;
                 // testtext.innerText = 'muri';
             }
         }
         json.onclick = async () => {sendJson()};
+        json2.onclick = async () => {
+            const response = await fetch("http://localhost:8000/testJson");
+            testJson.innerText = await response.text();
+        }
     </script>
 </head>
 <body>
-    <button id="json" type="button">てそと</button>
-    <h1 id="testtext"></h1>
+    <button id="json" type="button">POSTてそと</button>
+    <h2 id="testText"></h2>
+    <button id="json2" type="button">GETてそと</button>
+    <h2 id="testJson"></h2>
 </body>
 </html>
