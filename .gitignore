@@ -1,0 +1,8 @@
+# IntellJ用
+.idea
+
+# Mac用
+.DS_Store
+
+# VSCode用
+.vscode
