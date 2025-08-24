@@ -1,5 +1,6 @@
 {
   "imports": {
+    "@deno/emit": "jsr:@deno/emit@^0.46.0",
     "@std/http": "jsr:@std/http@^1.0.17"
   },
   "tasks": {
