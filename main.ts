@@ -20,10 +20,16 @@ Deno.serve(async (req) => {
 			});
 
 			// トランスパイルした結果のコードを返す
+			// Determine cache duration based on environment
+			const env = Deno.env.get('DENO_ENV') || 'development';
+			const cacheControl =
+				env === 'production'
+					? 'public, max-age=31536000, immutable'
+					: 'no-cache, no-store, must-revalidate';
 			return new Response(code, {
 				headers: {
 					'Content-Type': 'application/javascript; charset=utf-8',
-					'Cache-Control': 'public, max-age=31536000, immutable',
+					'Cache-Control': cacheControl,
 				},
 			});
 		} catch (error) { // トランスパイル時にエラーが発生した際
