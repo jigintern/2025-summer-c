@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <title>Leaflet Map</title>
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 
     <style>
@@ -47,18 +47,27 @@
     </style>
 </head>
 <body>
-    <div class="body-container">
-        <div id="map"></div>
+<div class="body-container">
+    <div id="map"></div>
 
-        <div class="info-panel">
-            <h2>Mapの領域</h2>
-            <p>現在表示されている領域:</p>
-            <div id="map-bounds-display"></div>
+    <div class="info-panel">
+        <h2>Mapの領域</h2>
+        <p>現在表示されている領域:</p>
+        <div id="map-bounds-display"></div>
 
 
-    <div id="infoModal" style="display: none;">
+        <div id="infoModal" style="display: none;">
+            <div class="info-box">
+                <h3>投稿者: <input type="text" id="posterName"></h3>
+                <p><strong>年代:</strong> <input type="text" id="era"></p>
+                <p><textarea id="bodyText"></textarea></p>
+            </div>
+            <button id="submitInfo">Submit</button>
+            <button id="cancelInfo">Cancel</button>
         </div>
 
-    <script src="./main.js" type="module"></script>
+        <script src="./map.ts" type="module"></script>
+    </div>
+</div>
 </body>
 </html>
