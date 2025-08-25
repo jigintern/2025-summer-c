@@ -5,10 +5,20 @@ import {bundle} from 'jsr:@deno/emit';
 import denoConfig from './deno.json' with {type: 'json'};
 
 const publicRoot = join(Deno.cwd(), 'public');
+/// <reference lib="deno.unstable" />
+import { serveDir } from 'jsr:@std/http/file-server';
+import { ulid } from "https://deno.land/x/ulid@v0.3.0/mod.ts";
 
 Deno.serve(async (req) => {
 	const pathname = new URL(req.url).pathname;
-	console.log(pathname);
+    const kv = await Deno.openKv();
+	if (req.method === 'POST' && pathname === '/post-json') {
+        const body = await req.json();
+        console.log(body)
+        const id = ulid();
+        kv.set(["items",1], body);
+		return new Response(body);
+	}
 
 	// .tsをトランスパイルするブロック
 	if (pathname.endsWith('.ts')) { // URLの末尾が.tsなら
@@ -40,10 +50,14 @@ Deno.serve(async (req) => {
 			);
 		}
 	}
-    
+
 	if (req.method === 'GET' && pathname === '/welcome-message') {
 		return new Response('jigインターンへようこそ！');
 	}
+    if (req.method === 'GET' && pathname === '/get-json') {
+        const items = await kv.get(["items",1]);
+        return new Response(JSON.stringify(items));
+    }
 
 	return serveDir(req, {
 		fsRoot: 'public',
