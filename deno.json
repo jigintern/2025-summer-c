@@ -3,10 +3,12 @@
     "@deno/emit": "jsr:@deno/emit@^0.46.0",
     "@std/http": "jsr:@std/http@^1.0.17",
     "leaflet": "npm:leaflet@^1.9.4",
-    "egmap": "./lib/egmap.ts"
+    "egmap": "./lib/egmap.ts",
+    "@deno/esbuild-plugin": "jsr:@deno/esbuild-plugin@^1.2.0",
+    "esbuild": "npm:esbuild@^0.25.9"
   },
   "tasks": {
-    "start": "deno run --watch --allow-net --allow-read main.ts"
+    "start": "deno run --watch --allow-net --allow-read  --allow-run --allow-env main.ts"
   },
   "compilerOptions": {
     "lib": [
