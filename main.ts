@@ -6,7 +6,8 @@ import {denoPlugin} from '@deno/esbuild-plugin';
 import {bundle} from 'jsr:@deno/emit';
 import denoConfig from './deno.json' with {type: 'json'};
 import dummy from './backend/testcase.json' with { type: "json" };
-import {find, findByDecade} from './backend/database.ts';
+import {find} from './backend/database.ts';
+import {query} from './backend/backend.ts';
 
 const publicRoot = join(Deno.cwd(), 'public');
 import { ulid } from "https://deno.land/x/ulid@v0.3.0/mod.ts";
@@ -51,43 +52,9 @@ Deno.serve(async (req) => {
 		}
 	}
 
-	if (req.method === 'GET' && pathname === '/welcome-message') {
-		return new Response('jigインターンへようこそ！');
-	}
-
-    if (req.method === 'POST' && pathname === '/post-json') {
-        const body = await req.json();
-        console.log(body)
-        const id = ulid();
-        kv.set(["items",id], body);
-        let yearesr = body["decade"]["gt"];
-        let yearesl = body["decade"]["lte"] === -1 ? yearesr-50 : body["decade"]["lte"];
-        for (let i = yearesl; i < yearesr; i+=10) {
-            const id2 = ulid();
-            kv.set(["itemsDecades",i,id2], id);
-        }
-        return new Response(body);
-    }
-
-    if (req.method === 'GET' && pathname === '/get-json') {
-        const items = await kv.list({prefix: ["items"]});
-        let ret = "";
-        for await (const item of items) {
-            ret += JSON.stringify(item) + "\n";
-        }
-        return new Response(ret);
-    }
-
-    if (req.method === 'GET' && pathname === '/query-json') {
-        const yearGet = new URL(req.url).searchParams.get("year") ?? "1900";
-        const year = parseInt(yearGet)
-        console.log(year)
-        const x = new URL(req.url).searchParams.get("x") ?? "0";
-        const y = new URL(req.url).searchParams.get("y") ?? "0";
-        const x2 = new URL(req.url).searchParams.get("x2") ?? "1";
-        const y2 = new URL(req.url).searchParams.get("y2") ?? "1";
-        const ret = await find(kv, year, parseFloat(x),parseFloat(y),parseFloat(x2),parseFloat(y2));
-        return new Response(ret);
+    // バックエンド処理
+    if(req.method === "GET" || req.method === "POST"){
+        return await query(kv, req);
     }
 
     return serveDir(req, {
