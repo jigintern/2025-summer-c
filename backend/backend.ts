@@ -19,8 +19,8 @@ export async function query(kv: Deno.Kv, req: Request) {
         console.log(body)
         const id = ulid();
         kv.set(["items",id], body);
-        let yearesr = body["decade"]["gt"];
-        let yearesl = body["decade"]["lte"] === -1 ? yearesr-50 : body["decade"]["lte"];
+        const yearesr = body["decade"]["gt"];
+        const yearesl = body["decade"]["lte"] === -1 ? yearesr-50 : body["decade"]["lte"];
         for (let i = yearesl; i < yearesr; i+=10) {
             const id2 = ulid();
             kv.set(["itemsDecades",i,id2], id);
