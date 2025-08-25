@@ -1,46 +1,50 @@
 import {serveDir} from 'jsr:@std/http/file-server';
-import console from 'node:console';
 import {join} from 'jsr:@std/path';
-import {bundle} from 'jsr:@deno/emit';
-import denoConfig from './deno.json' with {type: 'json'};
+import * as esbuild from 'esbuild';
+import {denoPlugin} from '@deno/esbuild-plugin';
 
 const publicRoot = join(Deno.cwd(), 'public');
 
 Deno.serve(async (req) => {
 	const pathname = new URL(req.url).pathname;
-	console.log(pathname);
 
-	// .tsをトランスパイルするブロック
-	if (pathname.endsWith('.ts')) { // URLの末尾が.tsなら
-		const tsPath = join(publicRoot, pathname); // public/<ファイルパス>を得る
+	// .tsをバンドルしてjsに変換するブロック
+	if (pathname.endsWith('.ts')) {
+		const tsPath = join(publicRoot, pathname);
 		try {
-			// トランスパイルして結果のコードを得る
-			const { code } = await bundle(tsPath, {
-				importMap: denoConfig,
+			const result = await esbuild.build({
+				entryPoints: [tsPath],
+				plugins: [denoPlugin()],
+				bundle: true,
+				write: false,
+				format: 'esm',
 			});
 
-			// トランスパイルした結果のコードを返す
-			// Determine cache duration based on environment
+			const code = result.outputFiles[0].text;
+
+			// 環境に応じてキャッシュの有効期限を設定する
 			const env = Deno.env.get('DENO_ENV') || 'development';
-			const cacheControl =
-				env === 'production'
-					? 'public, max-age=31536000, immutable'
-					: 'no-cache, no-store, must-revalidate';
+			const cacheControl = env === 'production'
+				? 'public, max-age=31536000, immutable'
+				: 'no-cache, no-store, must-revalidate';
+
 			return new Response(code, {
 				headers: {
 					'Content-Type': 'application/javascript; charset=utf-8',
 					'Cache-Control': cacheControl,
 				},
 			});
-		} catch (error) { // トランスパイル時にエラーが発生した際
-			const errorMessage = error && error.message ? error.message : String(error);
-			return new Response(
-				`TypeScript bundling error: ${errorMessage}`,
-				{ status: 500 }
-			);
+		} catch (error) {
+			const errorMessage = error && (error as Error).message 
+				? (error as Error).message
+				: String(error);
+			console.error('esbuild build error:', error);
+			return new Response(`TypeScript bundling error: ${errorMessage}`, {
+				status: 500,
+			});
 		}
 	}
-    
+
 	if (req.method === 'GET' && pathname === '/welcome-message') {
 		return new Response('jigインターンへようこそ！');
 	}
