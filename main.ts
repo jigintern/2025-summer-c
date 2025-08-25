@@ -79,6 +79,10 @@ Deno.serve(async (req) => {
         return new Response(ret);
     }
 
+    if (req.method === 'GET' && pathname === '/welcome-message') {
+        return new Response("ya");
+    }
+
     return serveDir(req, {
 		fsRoot: 'public',
 		urlRoot: '',
