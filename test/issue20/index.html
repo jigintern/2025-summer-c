@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON入力フォーム</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 2em;
+        }
+        div, fieldset {
+            margin-bottom: 1.5em;
+        }
+        label {
+            display: inline-block;
+            width: 80px;
+            margin-bottom: 5px;
+        }
+        input[type="text"], input[type="number"], textarea {
+            padding: 5px;
+            width: 250px;
+        }
+        fieldset {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 1em;
+        }
+        legend {
+            font-weight: bold;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 2em 0;
+        }
+    </style>
+    <script type="module" src="/test.js"></script>
+</head>
+<body>
+
+<h1>JSONデータ入力フォーム</h1>
+<p>指定されたJSON構造のデータを入力するためのフォームです。</p>
+
+<form action="#" method="post">
+
+    <div>
+        <label for="name">name:</label>
+        <input type="text" id="name" name="name" value="hoge">
+    </div>
+
+    <hr>
+
+    <fieldset>
+        <legend>coordinate</legend>
+        <div>
+            <label for="coord_x">x:</label>
+            <input type="number" id="coord_x" name="coordinate.x" value="10">
+        </div>
+        <div>
+            <label for="coord_y">y:</label>
+            <input type="number" id="coord_y" name="coordinate.y" value="100">
+        </div>
+        <div>
+            <label for="coord_h">h:</label>
+            <input type="number" id="coord_h" name="coordinate.h" value="10">
+        </div>
+        <div>
+            <label for="coord_w">w:</label>
+            <input type="number" id="coord_w" name="coordinate.w" value="100">
+        </div>
+        <div>
+            <label for="coord_angle">angle:</label>
+            <input type="number" id="coord_angle" name="coordinate.angle" value="45">
+        </div>
+    </fieldset>
+
+    <hr>
+
+    <fieldset>
+        <legend>decade</legend>
+        <div>
+            <label for="decade_lte">lte:</label>
+            <input type="number" id="decade_lte" name="decade.lte" value="2000" placeholder="年 (例: 2000)">
+        </div>
+        <div>
+            <label for="decade_gt">gt:</label>
+            <input type="number" id="decade_gt" name="decade.gt" value="2020" placeholder="年 (例: 2020)">
+        </div>
+    </fieldset>
+
+    <hr>
+
+    <div>
+        <label for="comment">comment:</label>
+        <textarea id="comment" name="comment" rows="4">hogehoge</textarea>
+    </div>
+
+    <hr>
+
+    <div>
+        <label for="photos">photos:</label>
+        <input type="text" id="photos" name="photos" value="hugahuga">
+        <p style="font-size: 0.8em; color: #666; margin-left: 85px;">複数の場合はカンマ区切りで入力してください。</p>
+    </div>
+
+    <hr>
+
+    <fieldset>
+        <legend>thread (1件目)</legend>
+        <div>
+            <label for="thread_id">id:</label>
+            <input type="number" id="thread_id" name="thread[0].id" value="101">
+        </div>
+        <div>
+            <label for="thread_comment">comment:</label>
+            <textarea id="thread_comment" name="thread[0].comment" rows="3">hogehoge</textarea>
+        </div>
+        <div>
+            <label for="thread_created_at">created_at:</label>
+            <input type="date" id="thread_created_at" name="thread[0].created_at" value="2020-01-01">
+        </div>
+    </fieldset>
+
+    <hr>
+
+    <div>
+        <label for="created_at">created_at:</label>
+        <input type="date" id="created_at" name="created_at" value="2020-01-01">
+    </div>
+
+    <br>
+    <input type="submit" value="送信">
+
+</form>
+<h2 id="testres">a</h2>
+<div>
+    <h1>GETのテストはこちら↓</h1>
+    <input type="number" id="year" min="1900" max="2020" value="2010"><br>
+    x : <input type="number" id="x" min="0" max="100" value="50"><br>
+    y : <input type="number" id="y" min="0" max="100" value="50"><br>
+    x2 : <input type="number" id="x2" min="0" max="100" value="1000"><br>
+    y2 : <input type="number" id="y2" min="0" max="100" value="1000"><br>
+    <button id="queryJson">querydoya</button>
+    <br>
+    <!--    <button id="postJson">postdoya</button>-->
+    <!--    <button id="getJson">getdoya</button>-->
+    <!--    <h2 id="resp">a</h2>-->
+    <!--  <h2 id="resp2">b</h2>-->
+    <h2 id="resp2">b</h2>
+    <h2 id="resp3">b</h2>
+</div>
+</body>
+</html>

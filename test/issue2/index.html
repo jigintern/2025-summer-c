@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8">
+    <title>ようこそ、jigインターンへ！</title>
+    <link rel="icon" href="data:image/x-icon;,">
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+      }
+      html, body {
+        height: 100vh;
+        width: 100%;
+      }
+      body {
+        /*display: grid;*/
+        /*place-content: center;*/
+      }
+    </style>
+    <script type="module" src="/test.js">
+        queryJson.onclick = async () => {
+            let lte = document.getElementById('lte').value;
+            let gt = document.getElementById('gt').value;
+            const response = await fetch("http://localhost:8000/query-json?lte=" + lte + "&gt=" + gt);
+            resp3.innerText = await response.statusText();
+        };
+    </script>
+  </head>
+  <body>
+  <input type="number" id="year" min="1900" max="2020" value="2010"><br>
+  x : <input type="number" id="x" min="0" max="100" value="50"><br>
+  y : <input type="number" id="y" min="0" max="100" value="50"><br>
+  x2 : <input type="number" id="x2" min="0" max="100" value="1000"><br>
+  y2 : <input type="number" id="y2" min="0" max="100" value="1000"><br>
+  <button id="queryJson">querydoya</button>
+  <br>
+<!--    <button id="postJson">postdoya</button>-->
+<!--    <button id="getJson">getdoya</button>-->
+<!--    <h2 id="resp">a</h2>-->
+<!--  <h2 id="resp2">b</h2>-->
+  <h2 id="resp2">b</h2>
+  <h2 id="resp3">b</h2>
+  </body>
+</html>
