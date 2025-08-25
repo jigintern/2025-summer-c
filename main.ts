@@ -35,8 +35,8 @@ Deno.serve(async (req) => {
 				},
 			});
 		} catch (error) {
-			const errorMessage = error && (error as Error).message 
-				? (error as Error).message
+			const errorMessage = error && error instanceof Error
+				? error.message
 				: String(error);
 			console.error('esbuild build error:', error);
 			return new Response(`TypeScript bundling error: ${errorMessage}`, {
