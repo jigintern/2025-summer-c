@@ -1,23 +1,24 @@
 // types/leaflet.ts
 
-// A minimal definition for a Leaflet Layer
+// Leafletレイヤーの最小限の定義
 export interface LeafletLayer {
   addTo(map: LeafletMap): this;
   bindTooltip(content: string, options: object): this;
 }
 
-// A minimal definition for L.LayerGroup
+// L.LayerGroupの最小限の定義
 export interface LeafletLayerGroup extends LeafletLayer {
   clearLayers(): this;
   addLayer(layer: LeafletLayer): this;
+  removeLayer(layer: LeafletLayer): this; // この行を追加
 }
 
-// A minimal definition for L.Rectangle
+// L.Rectangleの最小限の定義
 export interface LeafletRectangle extends LeafletLayer {
     getBounds(): LeafletLatLngBounds;
 }
 
-/** A minimal definition for L.Map */
+/** L.Mapの最小限の定義 */
 export interface LeafletMap {
   getBounds(): LeafletLatLngBounds;
   getZoom(): number;
@@ -28,9 +29,8 @@ export interface LeafletMap {
   on(type: string, fn: (event: LeafletEvent) => void): this;
   addControl(control: LeafletControl): this;
 
-  // Custom properties added in map-initializer.js
+  // map-initializer.ts で追加されたカスタムプロパティ
   markerLayer: LeafletLayerGroup;
-  drawnItems: LeafletLayerGroup; // For holding user-drawn shapes
   addInfoBox: (data: {
     lat1: number;
     lng1: number;
@@ -42,35 +42,35 @@ export interface LeafletMap {
   }) => LeafletRectangle;
 }
 
-/** A minimal definition for L.LatLng */
+/** L.LatLngの最小限の定義 */
 export interface LeafletLatLng {
   lat: number;
   lng: number;
 }
 
-/** A minimal definition for L.LatLngBounds */
+/** L.LatLngBoundsの最小限の定義 */
 export interface LeafletLatLngBounds {
   getSouthWest(): LeafletLatLng;
   getNorthEast(): LeafletLatLng;
 }
 
-// Generic event
+// 一般的なイベント
 export interface LeafletEvent {
-    // Base properties for leaflet events
+    // Leafletイベントの基本プロパティ
 }
 
-// Specific event for draw creation
+// 描画作成時の特定のイベント
 export interface LeafletDrawEvent extends LeafletEvent {
   layer: LeafletRectangle;
   layerType: string;
 }
 
-// A minimal definition for a Leaflet Control
+// Leafletコントロールの最小限の定義
 export interface LeafletControl {
-    // Base for controls
+    // コントロールの基本
 }
 
-// A minimal definition for the global L object
+// グローバルなLオブジェクトの最小限の定義
 export interface LeafletGlobal {
     map(id: string, options: object): LeafletMap;
     tileLayer(url: string, options: object): LeafletLayer;

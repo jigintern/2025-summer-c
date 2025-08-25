@@ -1,4 +1,7 @@
-
+/**
+ * @file マップアプリケーションのクライアントサイドの主要なロジックを実装します。
+ * これには、マップの初期化、ユーザーインタラクションの処理、サーバーとのデータ同期などが含まれます。
+ */
 
 "use strict";
 
@@ -6,24 +9,32 @@ import { initMap } from "./map-initializer.ts";
 import { MapDataItem, MapDataInfo } from "../types/map.ts";
 import { LeafletMap, LeafletLatLngBounds } from "../types/leaflet.ts";
 
+/** アプリケーションで扱う地図データの配列。サーバーとの間で送受信される。 */
 let mapData: MapDataItem[] = [];
 
 // ================== DOM要素取得 ==================
+/** ユーザーインターフェースのモーダルウィンドウ要素。 */
 const modal = document.getElementById("infoModal") as HTMLElement;
+/** モーダル内の情報送信ボタン。 */
 const submitInfoButton = document.getElementById("submitInfo") as HTMLButtonElement;
+/** モーダル内のキャンセルボタン。 */
 const cancelInfoButton = document.getElementById("cancelInfo") as HTMLButtonElement;
+/** 投稿者名を入力するテキストフィールド。 */
 const posterNameInput = document.getElementById("posterName") as HTMLInputElement;
+/** 年代を入力するテキストフィールド。 */
 const eraInput = document.getElementById("era") as HTMLInputElement;
+/** 本文を入力するテキストエリア。 */
 const bodyTextInput = document.getElementById("bodyText") as HTMLTextAreaElement;
+/** マップの境界座標を表示するHTML要素。 */
 const boundsDisplay = document.getElementById("map-bounds-display") as HTMLElement;
 
-// ★ 追加点 1: 表示/非表示を切り替えるズームレベルの閾値
+/** 情報レイヤーの表示/非表示を切り替えるズームレベルの閾値。 */
 const VISIBILITY_ZOOM_THRESHOLD = 15;
 
 // ================== 関数定義 ==================
 
 /**
- * マップの表示範囲を更新する関数
+ * 現在のマップ表示範囲の座標をHTML要素に表示します。
  */
 function updateBoundsDisplay(): void {
     const bounds = map.getBounds();
@@ -42,7 +53,7 @@ function updateBoundsDisplay(): void {
 }
 
 /**
- * ★ 追加点 2: ズームレベルに応じてレイヤーの表示/非表示を切り替える関数
+ * 現在のズームレベルに応じて情報レイヤーの表示/非表示を切り替えます。
  */
 function updateLayerVisibility(): void {
     const currentZoom = map.getZoom();
@@ -60,9 +71,8 @@ function updateLayerVisibility(): void {
     }
 }
 
-
 /**
- * データ保存
+ * 現在の地図データ (mapData) をサーバーに非同期で保存します。
  */
 async function saveData(): Promise<void> {
     try {
@@ -81,7 +91,7 @@ async function saveData(): Promise<void> {
 }
 
 /**
- * データ読み込み
+ * サーバーから地図データを非同期で読み込み、マップを再描画します。
  */
 async function loadData(): Promise<void> {
     try {
@@ -91,7 +101,7 @@ async function loadData(): Promise<void> {
         if (Array.isArray(loadedData)) {
             mapData = loadedData;
             renderMap(); // データを元にレイヤーを作成
-            updateLayerVisibility(); // ★ 変更点 1: 初期表示時の可視性をチェック
+            updateLayerVisibility(); // 初期表示時の可視性をチェック
             console.log("データ読み込み成功");
         }
     } catch (error) {
@@ -100,7 +110,7 @@ async function loadData(): Promise<void> {
 }
 
 /**
- * マップ再描画
+ * 現在の `mapData` 配列の内容に基づいて、マップ上の情報ボックスを再描画します。
  */
 function renderMap(): void {
     map.markerLayer.clearLayers();
@@ -118,7 +128,8 @@ function renderMap(): void {
 }
 
 /**
- * モーダル入力
+ * ユーザーからの情報入力を求めるモーダルウィンドウを表示します。
+ * @returns {Promise<MapDataInfo | null>} ユーザーが情報を入力して決定した場合はその情報を、キャンセルした場合はnullを解決するPromise。
  */
 function showInfoModal(): Promise<MapDataInfo | null> {
     posterNameInput.value = "";
@@ -150,7 +161,9 @@ function showInfoModal(): Promise<MapDataInfo | null> {
 }
 
 /**
- * 図形作成イベント
+ * ユーザーがマップ上に新しい矩形を描画した際の処理を行います。
+ * @param {LeafletLatLngBounds} bounds - 描画された矩形の地理的境界。
+ * @returns {Promise<boolean>} ユーザーが情報を入力し、データが正常に追加された場合はtrue、キャンセルされた場合はfalseを解決するPromise。
  */
 async function handleShapeCreated(bounds: LeafletLatLngBounds): Promise<boolean> {
     const info = await showInfoModal();
@@ -167,21 +180,21 @@ async function handleShapeCreated(bounds: LeafletLatLngBounds): Promise<boolean>
             info: info,
         });
         renderMap(); // 再描画
-        updateLayerVisibility(); // ★ 追加点 3: 新規作成後も可視性をチェック
+        updateLayerVisibility(); // 新規作成後も可視性をチェック
         return true;
     }
     return false;
 }
 
 // ================== 初期化処理 ==================
+/** Leafletマップのインスタンス。 */
 const map: LeafletMap = initMap("map", handleShapeCreated);
 map.setView([35.943, 136.188], 15);
 
 // イベントリスナーを設定
 map.on("moveend", updateBoundsDisplay);
-map.on("zoomend", updateLayerVisibility); // ★ 追加点 4: ズーム完了時に表示を更新
+map.on("zoomend", updateLayerVisibility); // ズーム完了時に表示を更新
 
-// 初期データを読み込み、初期の範囲を表示
+// 初期化処理の実行
 loadData();
 updateBoundsDisplay();
-
