@@ -6,3 +6,5 @@
 
 # VSCode用
 .vscode
+
+deno.lock
