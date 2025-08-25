@@ -1,3 +1,4 @@
+/// <reference lib="deno.unstable" />
 import {serveDir} from 'jsr:@std/http/file-server';
 import console from 'node:console';
 import {join} from 'jsr:@std/path';
@@ -5,8 +6,6 @@ import {bundle} from 'jsr:@deno/emit';
 import denoConfig from './deno.json' with {type: 'json'};
 
 const publicRoot = join(Deno.cwd(), 'public');
-/// <reference lib="deno.unstable" />
-import { serveDir } from 'jsr:@std/http/file-server';
 import { ulid } from "https://deno.land/x/ulid@v0.3.0/mod.ts";
 
 Deno.serve(async (req) => {
