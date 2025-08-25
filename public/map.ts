@@ -1,20 +1,21 @@
-// main.js (と仮定)
+// public/main.ts
 
 "use strict";
 
-import { initMap } from "./map-initializer.js";
+import { initMap } from "./map-initializer.ts";
+import { MapDataItem, MapDataInfo } from "../types/map.ts";
+import { LeafletMap, LeafletLatLngBounds } from "../types/leaflet.ts";
 
-let mapData = [];
+let mapData: MapDataItem[] = [];
 
 // ================== DOM要素取得 ==================
-//const saveButton = document.getElementById("saveButton");
-const modal = document.getElementById("infoModal");
-const submitInfoButton = document.getElementById("submitInfo");
-const cancelInfoButton = document.getElementById("cancelInfo");
-const posterNameInput = document.getElementById("posterName");
-const eraInput = document.getElementById("era");
-const bodyTextInput = document.getElementById("bodyText");
-const boundsDisplay = document.getElementById("map-bounds-display");
+const modal = document.getElementById("infoModal") as HTMLElement;
+const submitInfoButton = document.getElementById("submitInfo") as HTMLButtonElement;
+const cancelInfoButton = document.getElementById("cancelInfo") as HTMLButtonElement;
+const posterNameInput = document.getElementById("posterName") as HTMLInputElement;
+const eraInput = document.getElementById("era") as HTMLInputElement;
+const bodyTextInput = document.getElementById("bodyText") as HTMLTextAreaElement;
+const boundsDisplay = document.getElementById("map-bounds-display") as HTMLElement;
 
 // ★ 追加点 1: 表示/非表示を切り替えるズームレベルの閾値
 const VISIBILITY_ZOOM_THRESHOLD = 15;
@@ -24,7 +25,7 @@ const VISIBILITY_ZOOM_THRESHOLD = 15;
 /**
  * マップの表示範囲を更新する関数
  */
-function updateBoundsDisplay() {
+function updateBoundsDisplay(): void {
   const bounds = map.getBounds();
   const southWest = bounds.getSouthWest();
   const northEast = bounds.getNorthEast();
@@ -43,7 +44,7 @@ function updateBoundsDisplay() {
 /**
  * ★ 追加点 2: ズームレベルに応じてレイヤーの表示/非表示を切り替える関数
  */
-function updateLayerVisibility() {
+function updateLayerVisibility(): void {
   const currentZoom = map.getZoom();
   
   if (currentZoom < VISIBILITY_ZOOM_THRESHOLD) {
@@ -63,7 +64,7 @@ function updateLayerVisibility() {
 /**
  * データ保存
  */
-async function saveData() {
+async function saveData(): Promise<void> {
   try {
     const response = await fetch("/api/save-data", {
       method: "POST",
@@ -82,11 +83,11 @@ async function saveData() {
 /**
  * データ読み込み
  */
-async function loadData() {
+async function loadData(): Promise<void> {
   try {
     const response = await fetch("/api/load-data");
     if (!response.ok) throw new Error(`サーバーエラー: ${response.status}`);
-    const loadedData = await response.json();
+    const loadedData: MapDataItem[] = await response.json();
     if (Array.isArray(loadedData)) {
       mapData = loadedData;
       renderMap(); // データを元にレイヤーを作成
@@ -101,7 +102,7 @@ async function loadData() {
 /**
  * マップ再描画
  */
-function renderMap() {
+function renderMap(): void {
   map.markerLayer.clearLayers();
   mapData.forEach((item) => {
     if (item.bounds && item.info) {
@@ -119,7 +120,7 @@ function renderMap() {
 /**
  * モーダル入力
  */
-function showInfoModal() {
+function showInfoModal(): Promise<MapDataInfo | null> {
   posterNameInput.value = "";
   eraInput.value = "";
   bodyTextInput.value = "";
@@ -151,7 +152,7 @@ function showInfoModal() {
 /**
  * 図形作成イベント
  */
-async function handleShapeCreated(bounds) {
+async function handleShapeCreated(bounds: LeafletLatLngBounds): Promise<void> {
   const info = await showInfoModal();
   if (info) {
     const southWest = bounds.getSouthWest();
@@ -171,13 +172,12 @@ async function handleShapeCreated(bounds) {
 }
 
 // ================== 初期化処理 ==================
-const map = initMap("map", handleShapeCreated);
+const map: LeafletMap = initMap("map", handleShapeCreated);
 map.setView([35.943, 136.188], 15);
 
 // イベントリスナーを設定
 map.on("moveend", updateBoundsDisplay);
 map.on("zoomend", updateLayerVisibility); // ★ 追加点 4: ズーム完了時に表示を更新
-//saveButton.addEventListener("click", saveData);
 
 // 初期データを読み込み、初期の範囲を表示
 loadData();
