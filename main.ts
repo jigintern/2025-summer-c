@@ -5,7 +5,6 @@ import * as esbuild from 'esbuild';
 import {denoPlugin} from '@deno/esbuild-plugin';
 import {bundle} from 'jsr:@deno/emit';
 import denoConfig from './deno.json' with {type: 'json'};
-import dummy from './backend/testcase.json' with { type: "json" };
 import {find} from './backend/database.ts';
 import {query} from './backend/backend.ts';
 
