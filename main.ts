@@ -1,7 +1,8 @@
 /// <reference lib="deno.unstable" />
 import {serveDir} from 'jsr:@std/http/file-server';
-import console from 'node:console';
 import {join} from 'jsr:@std/path';
+import * as esbuild from 'esbuild';
+import {denoPlugin} from '@deno/esbuild-plugin';
 import {bundle} from 'jsr:@deno/emit';
 import denoConfig from './deno.json' with {type: 'json'};
 import dummy from './backend/testcase.json' with { type: "json" };
@@ -13,35 +14,45 @@ import { ulid } from "https://deno.land/x/ulid@v0.3.0/mod.ts";
 Deno.serve(async (req) => {
 	const pathname = new URL(req.url).pathname;
     const kv = await Deno.openKv();
-	// .tsをトランスパイルするブロック
-	if (pathname.endsWith('.ts')) { // URLの末尾が.tsなら
-		const tsPath = join(publicRoot, pathname); // public/<ファイルパス>を得る
+	// .tsをバンドルしてjsに変換するブロック
+	if (pathname.endsWith('.ts')) {
+		const tsPath = join(publicRoot, pathname);
 		try {
-			// トランスパイルして結果のコードを得る
-			const { code } = await bundle(tsPath, {
-				importMap: denoConfig,
+			const result = await esbuild.build({
+				entryPoints: [tsPath],
+				plugins: [denoPlugin()],
+				bundle: true,
+				write: false,
+				format: 'esm',
 			});
 
-			// トランスパイルした結果のコードを返す
-			// Determine cache duration based on environment
+			const code = result.outputFiles[0].text;
+
+			// 環境に応じてキャッシュの有効期限を設定する
 			const env = Deno.env.get('DENO_ENV') || 'development';
-			const cacheControl =
-				env === 'production'
-					? 'public, max-age=31536000, immutable'
-					: 'no-cache, no-store, must-revalidate';
+			const cacheControl = env === 'production'
+				? 'public, max-age=31536000, immutable'
+				: 'no-cache, no-store, must-revalidate';
+
 			return new Response(code, {
 				headers: {
 					'Content-Type': 'application/javascript; charset=utf-8',
 					'Cache-Control': cacheControl,
 				},
 			});
-		} catch (error) { // トランスパイル時にエラーが発生した際
-			const errorMessage = error && error.message ? error.message : String(error);
-			return new Response(
-				`TypeScript bundling error: ${errorMessage}`,
-				{ status: 500 }
-			);
+		} catch (error) {
+			const errorMessage = error && error instanceof Error
+				? error.message
+				: String(error);
+			console.error('esbuild build error:', error);
+			return new Response(`TypeScript bundling error: ${errorMessage}`, {
+				status: 500,
+			});
 		}
+	}
+
+	if (req.method === 'GET' && pathname === '/welcome-message') {
+		return new Response('jigインターンへようこそ！');
 	}
 
     if (req.method === 'POST' && pathname === '/post-json') {
@@ -77,10 +88,6 @@ Deno.serve(async (req) => {
         const y2 = new URL(req.url).searchParams.get("y2") ?? "1";
         const ret = await find(kv, year, parseFloat(x),parseFloat(y),parseFloat(x2),parseFloat(y2));
         return new Response(ret);
-    }
-
-    if (req.method === 'GET' && pathname === '/welcome-message') {
-        return new Response("ya");
     }
 
     return serveDir(req, {
