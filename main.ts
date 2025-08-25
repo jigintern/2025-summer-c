@@ -2,13 +2,41 @@ import {serveDir} from 'jsr:@std/http/file-server';
 import {join} from 'jsr:@std/path';
 import * as esbuild from 'esbuild';
 import {denoPlugin} from '@deno/esbuild-plugin';
+import {MapDataItem} from "./types/map.ts";
 
 const publicRoot = join(Deno.cwd(), 'public');
 
+
+let mapData: MapDataItem[]  = [];  // 
 Deno.serve(async (req) => {
 	const pathname = new URL(req.url).pathname;
+    
+    // /api
+    if (req.method === "POST" && pathname === "/api/save-data") {
+        try {
+            const body = await req.json();
+            if (Array.isArray(body)) {
+                mapData = body;
+            }
+            return new Response(JSON.stringify({ status: "ok" }), {
+                headers: { "Content-Type": "application/json" },
+            });
+        } catch (err) {
+            const errmsg = err instanceof Error ? err.message : String(err);
+            return new Response(
+                JSON.stringify({ error: errmsg }),
+                { status: 400, headers: { "Content-Type": "application/json" } }
+            );
+        }
+    }
 
-	// .tsをバンドルしてjsに変換するブロック
+    if (req.method === "GET" && pathname === "/api/load-data") {
+        return new Response(JSON.stringify(mapData), {
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+
+    // .tsをバンドルしてjsに変換するブロック
 	if (pathname.endsWith('.ts')) {
 		const tsPath = join(publicRoot, pathname);
 		try {
@@ -43,10 +71,6 @@ Deno.serve(async (req) => {
 				status: 500,
 			});
 		}
-	}
-
-	if (req.method === 'GET' && pathname === '/welcome-message') {
-		return new Response('jigインターンへようこそ！');
 	}
 
 	return serveDir(req, {

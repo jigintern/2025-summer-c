@@ -14,7 +14,7 @@ import {
 // L from Leaflet.js is available globally.
 declare const L: LeafletGlobal;
 
-export function initMap(mapid: string, onShapeCreated: (bounds: LeafletLatLngBounds) => void): LeafletMap {
+export function initMap(mapid: string, onShapeCreated: (bounds: LeafletLatLngBounds) => Promise<boolean>): LeafletMap {
 	const map: LeafletMap = L.map(mapid, {
 		maxZoom: 18,
 		center: [35.943, 136.188]
@@ -80,11 +80,21 @@ export function initMap(mapid: string, onShapeCreated: (bounds: LeafletLatLngBou
 	});
 	map.addControl(drawControl);
 
-	map.on(L.Draw.Event.CREATED, (event: LeafletEvent) => {
+	map.on(L.Draw.Event.CREATED, async (event: LeafletEvent) => {
         const drawEvent = event as LeafletDrawEvent;
 		if (drawEvent.layerType === 'rectangle') {
-			const bounds = drawEvent.layer.getBounds();
-            onShapeCreated(bounds);
+            const layer = drawEvent.layer;
+            // Add the layer to the drawnItems group immediately to make it visible.
+            drawnItems.addLayer(layer);
+
+			const bounds = layer.getBounds();
+            // Await the result of the modal interaction.
+            const success = await onShapeCreated(bounds);
+
+            // If the user cancelled, remove the layer we just added.
+            if (!success) {
+                drawnItems.removeLayer(layer);
+            }
 		}
 	});
 

@@ -30,6 +30,7 @@ export interface LeafletMap {
 
   // Custom properties added in map-initializer.js
   markerLayer: LeafletLayerGroup;
+  drawnItems: LeafletLayerGroup; // For holding user-drawn shapes
   addInfoBox: (data: {
     lat1: number;
     lng1: number;
