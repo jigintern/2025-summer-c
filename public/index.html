@@ -15,15 +15,26 @@
         width: 100%;
       }
       body {
-        display: grid;
-        place-content: center;
+        /*display: grid;*/
+        /*place-content: center;*/
       }
     </style>
     <script type="module">
-      const message = await fetch("/welcome-message")
-      document.querySelector("body").innerHTML = `<h1>${await message.text()}</h1>`
+        getJson.onclick = async () => {
+            const response = await fetch("http://localhost:8000/get-json");
+            resp2.innerText = await response.text();
+        };
     </script>
   </head>
   <body>
+<!--  <input type="number" id="lte" min="1900" max="2020" value="1900">-->
+<!--  <input type="number" id="gt" min="1900" max="2020" value="2020">-->
+<!--  <button id="queryJson">querydoya</button>-->
+  <br>
+    <button id="postJson">postdoya</button>
+    <button id="getJson">getdoya</button>
+    <h2 id="resp">a</h2>
+  <h2 id="resp2">b</h2>
+  <h2 id="resp3">b</h2>
   </body>
 </html>

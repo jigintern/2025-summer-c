@@ -17,7 +17,7 @@
       "hugahuga"
     ],
     "thread": [
-      "1" : {
+      {
         "id":101,
         "comment": "hogehoge",
         "created_at": "2020-01-01"
