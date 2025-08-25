@@ -27,8 +27,11 @@ Deno.serve(async (req) => {
 				},
 			});
 		} catch (error) { // トランスパイル時にエラーが発生した際
-			console.error('Error bundling TypeScript file:', error);
-			return new Response('Internal Server Error', { status: 500 });
+			const errorMessage = error && error.message ? error.message : String(error);
+			return new Response(
+				`TypeScript bundling error: ${errorMessage}`,
+				{ status: 500 }
+			);
 		}
 	}
     
