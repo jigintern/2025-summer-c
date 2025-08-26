@@ -9,7 +9,10 @@
     "esbuild": "npm:esbuild@^0.25.9"
   },
   "tasks": {
-    "start": "deno run --watch --allow-net --allow-read  --allow-run --allow-env --unstable-kv main.ts"
+    "start": "deno run --watch --allow-net --allow-read  --allow-run --allow-env --unstable-kv main.ts",
+    "build": "deno bundle --platform browser --output public/map.js public/map.ts --minify",
+    "build:all": "deno bundle --platform browser --output public/map.js public/map.ts --minify && deno bundle --platform browser --output public/issue34/main.js public/issue34/main.ts --minify",
+    "build:prod": "deno task build:all && DENO_ENV=production deno run --allow-net --allow-read --allow-run --allow-env --unstable-kv main.ts"
   },
   "compilerOptions": {
     "lib": [
