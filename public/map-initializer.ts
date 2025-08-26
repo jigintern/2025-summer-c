@@ -10,9 +10,9 @@ import {
   LeafletDrawEvent,
   LeafletRectangle,
   LeafletLayerGroup,
-  LeafletControl,
   LeafletEvent
 } from "../types/leaflet.ts";
+import { PostSubmission } from "../types/postData.ts";
 
 // Leaflet.jsから提供されるグローバルなLオブジェクト。
 declare const L: LeafletGlobal;
@@ -44,11 +44,9 @@ export function initMap(mapid: string, onShapeCreated: (bounds: LeafletLatLngBou
    * @param data - 表示する情報を含むデータオブジェクト。
    * @returns {LeafletRectangle} 作成された矩形レイヤー。
    */
-	map.addInfoBox = function(data: {
-    lat1: number; lng1: number; lat2: number; lng2: number;
-    posterName: string; era: string; bodyText: string;
-  }): LeafletRectangle {
-		const bounds: [[number, number], [number, number]] = [[data.lat1, data.lng1], [data.lat2, data.lng2]];
+	map.addInfoBox = function(data: PostSubmission): LeafletRectangle {
+		const { y, x, h, w } = data.coordinate;
+        const bounds: [[number, number], [number, number]] = [[y, x], [y + h, x + w]];
 
 		const rect: LeafletRectangle = L.rectangle(bounds, {
 			color: "#0033ff",
@@ -58,8 +56,8 @@ export function initMap(mapid: string, onShapeCreated: (bounds: LeafletLatLngBou
 
 		const content = `
 			<div class="info-box">
-				<p>${data.bodyText.replace(/\n/g, '<br>')}</p>
-				<div style="display: flex; justify-content: space-between;">${data.posterName} <p> ${data.era}</p></div>
+				<p class="info-content">${data.comment.replace(/\n/g, '<br>')}</p>
+				<div class="info-sub-data"><span>${data.name}</span> <span> ${data.decade.gt}-${data.decade.lte}</span></div>
 			</div>
 		`;
 
@@ -73,25 +71,25 @@ export function initMap(mapid: string, onShapeCreated: (bounds: LeafletLatLngBou
 		return rect;
 	};
 
-  /** ユーザーによって描画された図形を保持するレイヤーグループ。 */
-	const drawnItems: LeafletLayerGroup = new L.FeatureGroup();
-	map.addLayer(drawnItems);
+  /** ユーザーによって描画された図形を一時的に保持するレイヤーグループ。 */
+	map.drawnItems = new L.FeatureGroup();
+	map.addLayer(map.drawnItems);
 
   // ユーザーが図形を描画し終えたときのイベントリスナー
 	map.on(L.Draw.Event.CREATED, async (event: LeafletEvent) => {
         const drawEvent = event as LeafletDrawEvent;
         const layer = drawEvent.layer;
-        // レイヤーをすぐにdrawnItemsグループに追加して可視化する
-        drawnItems.addLayer(layer);
+
+        // レイヤーを一時的にdrawnItemsグループに追加して可視化する
+        map.drawnItems.addLayer(layer);
 
         const bounds = layer.getBounds();
-        // モーダル操作の結果を待つ
-        const success = await onShapeCreated(bounds);
+        // モーダル操作（データ送信 or キャンセル）を待つ
+        await onShapeCreated(bounds);
 
-        // ユーザーがキャンセルした場合、先ほど追加したレイヤーを削除する
-        if (!success) {
-            drawnItems.removeLayer(layer);
-        }
+        // 永続的なレイヤーはmarkerLayerに追加されるため、
+        // 操作が完了したら、この一時的なレイヤーは常に削除する
+        map.drawnItems.removeLayer(layer);
 	});
 
 	return map;

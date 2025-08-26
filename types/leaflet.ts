@@ -1,4 +1,5 @@
 // types/leaflet.ts
+import { PostSubmission } from "./postData.ts";
 
 // Leafletレイヤーの最小限の定義
 export interface LeafletLayer {
@@ -30,15 +31,8 @@ export interface LeafletMap {
 
   // map-initializer.ts で追加されたカスタムプロパティ
   markerLayer: LeafletLayerGroup;
-  addInfoBox: (data: {
-    lat1: number;
-    lng1: number;
-    lat2: number;
-    lng2: number;
-    posterName: string;
-    era: string;
-    bodyText: string;
-  }) => LeafletRectangle;
+  drawnItems: LeafletLayerGroup; // 追加
+  addInfoBox: (data: PostSubmission) => LeafletRectangle;
 }
 
 /** L.LatLngの最小限の定義 */

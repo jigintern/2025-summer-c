@@ -26,13 +26,11 @@ const content: string = `
     <div class="info-box">
         <h3>内容: <textarea id="bodyText" rows="4"></textarea></h3>
         <p>投稿者: <input type="text" id="posterName"></p>
-        <p> <input type="text" id="era"></p>
         <div>
             <p>期間</p>
-            <p>およそ<input type="number" minlength="4" maxlength="4">年から(任意)</p>
-            <p>およそ<input type="number" minlength="4" maxlength="4">年まで(必須)</p>
+            <p>およそ<input type="number" id="era-gt" minlength="4" maxlength="4">年から(任意)</p>
+            <p>およそ<input type="number" id="era-lte" minlength="4" maxlength="4">年まで(必須)</p>
         </div>
-       
     </div>
     <button id="submitInfo">Submit</button>
     <button id="cancelInfo">Cancel</button>
@@ -71,8 +69,11 @@ class PostForm extends HTMLElement {
 		const posterName =
 			(this.shadowRoot.getElementById('posterName') as HTMLInputElement)
 				.value;
-		const era =
-			(this.shadowRoot.getElementById('era') as HTMLInputElement).value;
+		const eraGt = 
+            (this.shadowRoot.getElementById('era-gt') as HTMLInputElement).value;
+        const eraLte = 
+            (this.shadowRoot.getElementById('era-lte') as HTMLInputElement).value;
+        const era = `${eraGt}-${eraLte}`;
 		const bodyText =
 			(this.shadowRoot.getElementById('bodyText') as HTMLTextAreaElement)
 				.value;
@@ -102,7 +103,8 @@ class PostForm extends HTMLElement {
         // Inputを取得して空文字をセット
 		(this.shadowRoot.getElementById('posterName') as HTMLInputElement)
 			.value = '';
-		(this.shadowRoot.getElementById('era') as HTMLInputElement).value = '';
+		(this.shadowRoot.getElementById('era-gt') as HTMLInputElement).value = '';
+		(this.shadowRoot.getElementById('era-lte') as HTMLInputElement).value = '';
 		(this.shadowRoot.getElementById('bodyText') as HTMLTextAreaElement)
 			.value = '';
 	}

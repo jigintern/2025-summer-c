@@ -6,20 +6,17 @@
 "use strict";
 
 import { initMap } from "./map-initializer.ts";
-import { MapDataItem, MapDataInfo } from "../types/map.ts";
+import { MapDataInfo } from "../types/map.ts";
 import { LeafletMap, LeafletLatLngBounds, LeafletGlobal } from "../types/leaflet.ts";
+import { postJson, queryJson } from "../utils/api.ts";
+import { PostSubmission } from "../types/postData.ts";
 
 // Leaflet.jsから提供されるグローバルなLオブジェクト。
 declare const L: LeafletGlobal;
 
-/** アプリケーションで扱う地図データの配列。サーバーとの間で送受信される。 */
-let mapData: MapDataItem[] = [];
-
 // ================== DOM要素取得 ==================
 /** ユーザーインターフェースのモーダルウィンドウ要素。 */
 const modal = document.getElementById("infoModal") as HTMLElement & { clear: () => void; };
-/** マップの境界座標を表示するHTML要素。 */
-const boundsDisplay = document.getElementById("map-bounds-display") as HTMLElement;
 /** ドロワー */
 const drawerComponent = document.getElementById("drawer") as HTMLElement & {
     open: () => void;
@@ -27,103 +24,22 @@ const drawerComponent = document.getElementById("drawer") as HTMLElement & {
     toggle: () => void;
 }
 
-/** 情報レイヤーの表示/非表示を切り替えるズームレベルの閾値。 */
-const VISIBILITY_ZOOM_THRESHOLD = 15;
-
 // ================== 関数定義 ==================
-
-/**
- * 現在のマップ表示範囲の座標をHTML要素に表示します。
- */
-function updateBoundsDisplay(): void {
-    const bounds = map.getBounds();
-    const southWest = bounds.getSouthWest();
-    const northEast = bounds.getNorthEast();
-
-    const sw_lat = southWest.lat.toFixed(4);
-    const sw_lng = southWest.lng.toFixed(4);
-    const ne_lat = northEast.lat.toFixed(4);
-    const ne_lng = northEast.lng.toFixed(4);
-
-    boundsDisplay.innerHTML = `
-    SW: (${sw_lat}, ${sw_lng})<br>
-    NE: (${ne_lat}, ${ne_lng})
-  `;
-}
-
-/**
- * 現在のズームレベルに応じて領域レイヤーの表示/非表示を切り替えます。
- */
-function updateLayerVisibility(): void {
-    const currentZoom = map.getZoom();
-
-    if (currentZoom < VISIBILITY_ZOOM_THRESHOLD) {
-        // ズームレベルが閾値未満の場合、レイヤーをマップから削除する
-        if (map.hasLayer(map.markerLayer)) {
-            map.removeLayer(map.markerLayer);
-        }
-    } else {
-        // ズームレベルが閾値以上の場合、レイヤーをマップに追加する
-        if (!map.hasLayer(map.markerLayer)) {
-            map.addLayer(map.markerLayer);
-        }
-    }
-}
-
-/**
- * 現在の地図データ (mapData) をサーバーに非同期で保存します。
- */
-async function saveData(): Promise<void> {
-    try {
-        const response = await fetch("/api/save-data", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(mapData),
-        });
-        if (!response.ok) throw new Error(`サーバーエラー: ${response.status}`);
-        console.log("保存成功:", await response.json());
-        alert("データをサーバーに保存しました！");
-    } catch (error) {
-        console.error("保存失敗:", error);
-        alert("保存中にエラーが発生しました。");
-    }
-}
 
 /**
  * サーバーから地図データを非同期で読み込み、マップを再描画します。
  */
-async function loadData(): Promise<void> {
+async function loadAndRenderData(): Promise<void> {
     try {
-        const response = await fetch("/api/load-data");
-        if (!response.ok) throw new Error(`サーバーエラー: ${response.status}`);
-        const loadedData: MapDataItem[] = await response.json();
-        if (Array.isArray(loadedData)) {
-            mapData = loadedData;
-            renderMap(); // データを元にレイヤーを作成
-            updateLayerVisibility(); // 初期表示時の可視性をチェック
-            console.log("データ読み込み成功");
-        }
+        // クエリの範囲を全世界に広げて、すべてのデータを取得するようにします
+        const posts = await queryJson({ year: new Date().getFullYear(), x: -180, y: -90, x2: 180, y2: 90 });
+        map.markerLayer.clearLayers();
+        posts.forEach(post => {
+            map.addInfoBox(post);
+        });
     } catch (error) {
-        console.error("読み込み失敗:", error);
+        console.error("Failed to load initial data:", error);
     }
-}
-
-/**
- * 現在の `mapData` 配列の内容に基づいて、マップ上の情報ボックスを再描画します。
- */
-function renderMap(): void {
-    map.markerLayer.clearLayers();
-    mapData.forEach((item) => {
-        if (item.bounds && item.info) {
-            map.addInfoBox({
-                lat1: item.bounds.lat1,
-                lng1: item.bounds.lng1,
-                lat2: item.bounds.lat2,
-                lng2: item.bounds.lng2,
-                ...item.info,
-            });
-        }
-    });
 }
 
 /**
@@ -167,20 +83,44 @@ async function handleShapeCreated(bounds: LeafletLatLngBounds): Promise<boolean>
     drawerComponent.open()
     const info = await showInfoModal();
     if (info) {
-        const southWest = bounds.getSouthWest();
-        const northEast = bounds.getNorthEast();
-        mapData.push({
-            bounds: {
-                lat1: southWest.lat,
-                lng1: southWest.lng,
-                lat2: northEast.lat,
-                lng2: northEast.lng,
+        const sw = bounds.getSouthWest();
+        const ne = bounds.getNorthEast();
+
+        const [gtStr, lteStr] = info.era.split('-');
+        const gt = parseInt(gtStr, 10);
+        const lte = parseInt(lteStr, 10);
+
+        const submission: PostSubmission = {
+            name: info.posterName,
+            coordinate: {
+                y: sw.lat,
+                x: sw.lng,
+                h: ne.lat - sw.lat,
+                w: ne.lng - sw.lng,
+                angle: 0,
             },
-            info: info,
-        });
-        renderMap(); // 再描画
-        updateLayerVisibility(); // 新規作成後も可視性をチェック
-        return true;
+            decade: { gt, lte },
+            comment: info.bodyText,
+            photos: [],
+            thread: [],
+            created_at: new Date().toISOString(),
+        };
+
+        try {
+            const response = await postJson(submission);
+            if (response.ok) {
+                map.addInfoBox(submission);
+                return true;
+            } else {
+                console.error("Failed to save data", await response.text());
+                alert("データの保存に失敗しました。");
+                return false;
+            }
+        } catch (error) {
+            console.error("Error posting data", error);
+            alert("データの送信中にエラーが発生しました。");
+            return false;
+        }
     }
     return false;
 }
@@ -190,13 +130,8 @@ async function handleShapeCreated(bounds: LeafletLatLngBounds): Promise<boolean>
 const map: LeafletMap = initMap("map", handleShapeCreated);
 map.setView([35.943, 136.188], 15);
 
-// イベントリスナーを設定
-// map.on("moveend", updateBoundsDisplay);
-map.on("zoomend", updateLayerVisibility); // ズーム完了時に表示を更新
-
-// 初期化処理の実行
-loadData();
-// updateBoundsDisplay();
+// 初期データを一度だけ、全範囲で読み込む
+loadAndRenderData();
 
 // ================== カスタム描画コントロール ==================
 const drawRectangleButton = document.getElementById('draw-rectangle') as HTMLButtonElement;

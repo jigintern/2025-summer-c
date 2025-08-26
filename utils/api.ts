@@ -6,12 +6,19 @@ import { PostSubmission, QueryParams } from "../types/postData.ts";
 const mockPhotoDatabase: PostSubmission[] = [
     {
         name: '初期データ（鯖江市）',
-        coordinate: { x: 136.18, y: 35.94, h: 100, w: 150, angle: 0 },
+        coordinate: { x: 136.18, y: 35.94, h: 0.01, w: 0.01, angle: 0 },
         decade: { lte: 2000, gt: 1990 },
-        content: {
-            text: '西山公園のつつじの写真です。',
-            photos: ['nishiyama_park.jpg'],
-        },
+        comment: '西山公園のつつじの写真です。',
+        photos: ['nishiyama_park.jpg'],
+        thread: [],
+        created_at: '2025-05-15T10:00:00Z',
+    },
+    {
+        name: '初期データ2（鯖江市）',
+        coordinate: { x: 136.19, y: 35.94, h: 0.001, w: 0.001, angle: 100 },
+        decade: { lte: 2000, gt: 1990 },
+        comment: '西山公園のつつじの写真です。',
+        photos: ['nishiyama_park.jpg'],
         thread: [],
         created_at: '2025-05-15T10:00:00Z',
     },
@@ -25,7 +32,7 @@ const BASE_URL = 'http://localhost:8000';
  * @param data - 投稿するデータ
  * @returns 成功したことを示すfetchのレスポンス（のモック）
  */
-export const postJson = async (data: PostSubmission): Promise<Response> => {
+export const postJson = (data: PostSubmission): Promise<Response> => {
     console.log('【MOCK】以下のデータをサーバーに送信しました:', data);
 
     // モックデータベースにデータを追加
@@ -43,30 +50,18 @@ export const postJson = async (data: PostSubmission): Promise<Response> => {
 /**
  * クエリパラメータを使ってデータを検索する（モック版）
  * @param params - 検索用のクエリパラメータ
- * @returns 検索結果のデータ（JSON文字列）
+ * @returns 検索結果のデータ
  */
-export const queryJson = async (params: QueryParams): Promise<PostSubmission[]> => {
+export const queryJson = (params: QueryParams): Promise<PostSubmission[]> => {
     console.log('【MOCK】以下のパラメータでデータを検索しました:', params);
 
-    // ここにサーバーに対してgetを送信する処理
-
-    // ここはサーバー側の処理
-    // パラメータに基づいてモックデータをフィルタリング（ここではyearを簡易的にチェック）
     const filteredData = mockPhotoDatabase.filter(item => {
         const itemYear = new Date(item.created_at).getFullYear();
-        return itemYear <= params.year;
+        const inTime = itemYear <= params.year;
+        const inBounds = item.coordinate.x >= params.x && item.coordinate.x <= params.x2 &&
+                         item.coordinate.y >= params.y && item.coordinate.y <= params.y2;
+        return inTime && inBounds;
     });
-    const res = JSON.stringify(filteredData, null, 2) // サーバーからデータが返ってきたと思うことにする
 
-    // :以後に返り値の型を入れる
-    /*
-    const parsedData:  = JSON.parse(res);
-
-    // 検索結果をJSON文字列にして返す
-    return Promise.resolve(parsedData);
-    */
-    return filteredData;
-
-    //return Promise.resolve(JSON.stringify(filteredData, null, 2));
-
+    return Promise.resolve(filteredData);
 };
