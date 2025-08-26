@@ -44,6 +44,10 @@
             font-family: monospace;
             margin-bottom: 20px;
         }
+
+        .leaflet-draw-toolbar {
+            display: none !important;
+        }
     </style>
 </head>
 
@@ -57,6 +61,12 @@
 <!--        <p>現在表示されている領域:</p>-->
         <div id="map-bounds-display"></div>
 <!--    </div>-->
+</div>
+
+<div id="custom-controls" style="position: absolute; top: 20px; left: 70px; z-index: 500; background-color: white; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
+    <button id="draw-rectangle">四角形</button>
+    <button id="draw-polygon">ポリゴン</button>
+    <button id="draw-circle">円</button>
 </div>
 
 <drawer-component id="drawer">

@@ -7,7 +7,10 @@
 
 import { initMap } from "./map-initializer.ts";
 import { MapDataItem, MapDataInfo } from "../types/map.ts";
-import { LeafletMap, LeafletLatLngBounds } from "../types/leaflet.ts";
+import { LeafletMap, LeafletLatLngBounds, LeafletGlobal } from "../types/leaflet.ts";
+
+// Leaflet.jsから提供されるグローバルなLオブジェクト。
+declare const L: LeafletGlobal;
 
 /** アプリケーションで扱う地図データの配列。サーバーとの間で送受信される。 */
 let mapData: MapDataItem[] = [];
@@ -194,3 +197,16 @@ map.on("zoomend", updateLayerVisibility); // ズーム完了時に表示を更�
 // 初期化処理の実行
 loadData();
 // updateBoundsDisplay();
+
+// ================== カスタム描画コントロール ==================
+const drawRectangleButton = document.getElementById('draw-rectangle') as HTMLButtonElement;
+const drawPolygonButton = document.getElementById('draw-polygon') as HTMLButtonElement;
+const drawCircleButton = document.getElementById('draw-circle') as HTMLButtonElement;
+
+const rectangleDrawer = new L.Draw.Rectangle(map);
+const polygonDrawer = new L.Draw.Polygon(map);
+const circleDrawer = new L.Draw.Circle(map);
+
+drawRectangleButton.addEventListener('click', () => rectangleDrawer.enable());
+drawPolygonButton.addEventListener('click', () => polygonDrawer.enable());
+drawCircleButton.addEventListener('click', () => circleDrawer.enable());

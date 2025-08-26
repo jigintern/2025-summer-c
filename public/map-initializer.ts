@@ -77,43 +77,21 @@ export function initMap(mapid: string, onShapeCreated: (bounds: LeafletLatLngBou
 	const drawnItems: LeafletLayerGroup = new L.FeatureGroup();
 	map.addLayer(drawnItems);
 
-  /** Leaflet.drawプラグインの描画コントロール。 */
-	const drawControl: LeafletControl = new L.Control.Draw({
-		edit: {
-			featureGroup: drawnItems
-		},
-		draw: {
-			polygon: false,
-			polyline: false,
-			circle: false,
-			marker: false,
-			circlemarker: false,
-			rectangle: {
-				shapeOptions: {
-					color: '#007bff'
-				}
-			}
-		}
-	});
-	map.addControl(drawControl);
-
   // ユーザーが図形を描画し終えたときのイベントリスナー
 	map.on(L.Draw.Event.CREATED, async (event: LeafletEvent) => {
         const drawEvent = event as LeafletDrawEvent;
-		if (drawEvent.layerType === 'rectangle') {
-            const layer = drawEvent.layer;
-            // レイヤーをすぐにdrawnItemsグループに追加して可視化する
-            drawnItems.addLayer(layer);
+        const layer = drawEvent.layer;
+        // レイヤーをすぐにdrawnItemsグループに追加して可視化する
+        drawnItems.addLayer(layer);
 
-			const bounds = layer.getBounds();
-            // モーダル操作の結果を待つ
-            const success = await onShapeCreated(bounds);
+        const bounds = layer.getBounds();
+        // モーダル操作の結果を待つ
+        const success = await onShapeCreated(bounds);
 
-            // ユーザーがキャンセルした場合、先ほど追加したレイヤーを削除する
-            if (!success) {
-                drawnItems.removeLayer(layer);
-            }
-		}
+        // ユーザーがキャンセルした場合、先ほど追加したレイヤーを削除する
+        if (!success) {
+            drawnItems.removeLayer(layer);
+        }
 	});
 
 	return map;

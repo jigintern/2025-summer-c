@@ -26,7 +26,13 @@ const content: string = `
     <div class="info-box">
         <h3>内容: <textarea id="bodyText" rows="4"></textarea></h3>
         <p>投稿者: <input type="text" id="posterName"></p>
-        <p>年代: <input type="text" id="era"></p>
+        <p> <input type="text" id="era"></p>
+        <div>
+            <p>期間</p>
+            <p>およそ<input type="number" minlength="4" maxlength="4">年から(任意)</p>
+            <p>およそ<input type="number" minlength="4" maxlength="4">年まで(必須)</p>
+        </div>
+       
     </div>
     <button id="submitInfo">Submit</button>
     <button id="cancelInfo">Cancel</button>
