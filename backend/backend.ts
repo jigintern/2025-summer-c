@@ -2,6 +2,7 @@ import { ulid } from "https://deno.land/x/ulid@v0.3.0/mod.ts";
 import {find} from "./database.ts";
 import {serveDir} from 'jsr:@std/http/file-server';
 import {dataAdd, dataDel, dataView} from "./tester.ts";
+import {ItemData} from "../types/schema.ts";
 
 export async function query(kv: Deno.Kv, req: Request) {
 
@@ -15,9 +16,9 @@ export async function query(kv: Deno.Kv, req: Request) {
     }
 
     if (req.method === 'POST' && pathname === '/post-json') {
-        const body = await req.json();
+        const bod = await req.json();
+        const body : ItemData = bod as ItemData;
         const id = ulid();
-        console.log(body);
         kv.set(["items",id], body);
         let yearesr = 1;
         let yearesl = 0;
