@@ -2,6 +2,7 @@ import { ulid } from "https://deno.land/x/ulid@v0.3.0/mod.ts";
 import {find} from "./database.ts";
 import {serveDir} from 'jsr:@std/http/file-server';
 import {dataAdd, dataDel, dataView} from "./tester.ts";
+import {ItemData} from "../types/schema.ts";
 
 export async function query(kv: Deno.Kv, req: Request) {
 
@@ -15,17 +16,21 @@ export async function query(kv: Deno.Kv, req: Request) {
     }
 
     if (req.method === 'POST' && pathname === '/post-json') {
-        const body = await req.json();
-        console.log(body)
+        const bod = await req.json();
+        const body : ItemData = bod as ItemData;
         const id = ulid();
         kv.set(["items",id], body);
-        const yearesr = body["decade"]["gt"];
-        const yearesl = body["decade"]["lte"] === -1 ? yearesr-50 : body["decade"]["lte"];
+        let yearesr = 1;
+        let yearesl = 0;
+        try{
+            yearesr = body["decade"]["gt"];
+            yearesl = body["decade"]["lte"] === -1 ? yearesr - 50 : body["decade"]["lte"];
+        }catch (e) {}
         for (let i = yearesl; i < yearesr; i+=10) {
             const id2 = ulid();
             kv.set(["itemsDecades",i,id2], id);
         }
-        return new Response(body);
+        return Response.json(body);
     }
 
     if (req.method === 'GET' && pathname === '/get-json') {
@@ -38,15 +43,15 @@ export async function query(kv: Deno.Kv, req: Request) {
     }
 
     if (req.method === 'GET' && pathname === '/query-json') {
-        const yearGet = new URL(req.url).searchParams.get("year") ?? "1900";
+        const res = new URL(req.url).searchParams;
+        const yearGet = res.get("year") ?? "-1";
         const year = parseInt(yearGet)
-        console.log(year)
-        const x = new URL(req.url).searchParams.get("x") ?? "0";
-        const y = new URL(req.url).searchParams.get("y") ?? "0";
-        const x2 = new URL(req.url).searchParams.get("x2") ?? "1";
-        const y2 = new URL(req.url).searchParams.get("y2") ?? "1";
+        const x = res.get("x") ?? "0";
+        const y = res.get("y") ?? "0";
+        const x2 = res.get("x2") ?? "1";
+        const y2 = res.get("y2") ?? "1";
         const ret = await find(kv, year, parseFloat(x),parseFloat(y),parseFloat(x2),parseFloat(y2));
-        return new Response(ret);
+        return Response.json(ret);
     }
 
     return serveDir(req, {
