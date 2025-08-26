@@ -14,17 +14,7 @@ let mapData: MapDataItem[] = [];
 
 // ================== DOM要素取得 ==================
 /** ユーザーインターフェースのモーダルウィンドウ要素。 */
-const modal = document.getElementById("infoModal") as HTMLElement;
-/** モーダル内の情報送信ボタン。 */
-const submitInfoButton = document.getElementById("submitInfo") as HTMLButtonElement;
-/** モーダル内のキャンセルボタン。 */
-const cancelInfoButton = document.getElementById("cancelInfo") as HTMLButtonElement;
-/** 投稿者名を入力するテキストフィールド。 */
-const posterNameInput = document.getElementById("posterName") as HTMLInputElement;
-/** 年代を入力するテキストフィールド。 */
-const eraInput = document.getElementById("era") as HTMLInputElement;
-/** 本文を入力するテキストエリア。 */
-const bodyTextInput = document.getElementById("bodyText") as HTMLTextAreaElement;
+const modal = document.getElementById("infoModal") as HTMLElement & { clear: () => void; };
 /** マップの境界座標を表示するHTML要素。 */
 const boundsDisplay = document.getElementById("map-bounds-display") as HTMLElement;
 
@@ -132,31 +122,29 @@ function renderMap(): void {
  * @returns {Promise<MapDataInfo | null>} ユーザーが情報を入力して決定した場合はその情報を、キャンセルした場合はnullを解決するPromise。
  */
 function showInfoModal(): Promise<MapDataInfo | null> {
-    posterNameInput.value = "";
-    eraInput.value = "";
-    bodyTextInput.value = "";
+    modal.clear();
     modal.style.display = "block";
 
     return new Promise((resolve) => {
-        const onDecide = () => {
+        const onSubmit = (e: Event) => {
+            const customEvent = e as CustomEvent;
             cleanup();
-            resolve({
-                posterName: posterNameInput.value,
-                era: eraInput.value,
-                bodyText: bodyTextInput.value,
-            });
+            resolve(customEvent.detail);
         };
+
         const onCancel = () => {
             cleanup();
             resolve(null);
         };
+
         const cleanup = () => {
             modal.style.display = "none";
-            submitInfoButton.removeEventListener("click", onDecide);
-            cancelInfoButton.removeEventListener("click", onCancel);
+            modal.removeEventListener("submit", onSubmit);
+            modal.removeEventListener("cancel", onCancel);
         };
-        submitInfoButton.addEventListener("click", onDecide, { once: true });
-        cancelInfoButton.addEventListener("click", onCancel, { once: true });
+
+        modal.addEventListener("submit", onSubmit, { once: true });
+        modal.addEventListener("cancel", onCancel, { once: true });
     });
 }
 

@@ -24,7 +24,7 @@
 
         #map {
             flex-grow: 1;
-            height: 100%; /* ★3. マップがコンテナ全体に広がるように修正 */
+            height: 100%;
         }
 
         .info-panel {
@@ -55,19 +55,24 @@
         <p>現在表示されている領域:</p>
         <div id="map-bounds-display"></div>
 
-
-        <div id="infoModal" style="display: none;">
-            <div class="info-box">
-                <h3>投稿者: <input type="text" id="posterName"></h3>
-                <p><strong>年代:</strong> <input type="text" id="era"></p>
-                <p><textarea id="bodyText"></textarea></p>
-            </div>
-            <button id="submitInfo">Submit</button>
-            <button id="cancelInfo">Cancel</button>
-        </div>
-
-        <script src="./map.ts" type="module"></script>
+        <post-form id="infoModal" style="display: none;"></post-form>
     </div>
 </div>
+
+<!-- ▼▼▼ 作成したドロワーコンポーネントの使用例 ▼▼▼ -->
+<drawer-component>
+  <!-- ここの中身が<slot>に挿入されます -->
+  <h2>ドロワーのタイトル</h2>
+  <p>ここに、フォームや情報表示エリアなど、好きなコンテンツを自由に入れることができます。</p>
+  <hr>
+  <label for="name">お名前:</label>
+  <input type="text" id="name" name="name">
+</drawer-component>
+<!-- ▲▲▲ ここまで ▲▲▲ -->
+
+<script src="./post-form.ts" type="module"></script>
+<script src="./map.ts" type="module"></script>
+<script src="./drawer-component.ts" type="module"></script>
+
 </body>
 </html>
