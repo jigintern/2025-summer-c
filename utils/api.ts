@@ -1,4 +1,4 @@
-import { PostSubmission, QueryParams } from '../types/postData';
+import { PostSubmission, QueryParams } from '../types/postData.ts';
 
 /**
  * モックデータ用のデータベース（配列）
