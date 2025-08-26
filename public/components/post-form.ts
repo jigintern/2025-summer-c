@@ -75,10 +75,16 @@ class PostForm extends HTMLElement {
 		const posterName =
 			(this.shadowRoot.getElementById('posterName') as HTMLInputElement)
 				.value;
-		const eraGt = 
-            (this.shadowRoot.getElementById('era-gt') as HTMLInputElement).value;
-        const eraLte = 
             (this.shadowRoot.getElementById('era-lte') as HTMLInputElement).value;
+        
+        // Validate that both eraGt and eraLte are non-empty and numeric
+        if (
+            !eraGt || !eraLte ||
+            isNaN(Number(eraGt)) || isNaN(Number(eraLte))
+        ) {
+            alert('時代の範囲（開始年と終了年）を正しく入力してください。');
+            return;
+        }
         const era = `${eraGt}-${eraLte}`;
 		const bodyText =
 			(this.shadowRoot.getElementById('bodyText') as HTMLTextAreaElement)
