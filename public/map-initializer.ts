@@ -25,14 +25,14 @@ declare const L: LeafletGlobal;
  */
 export function initMap(mapid: string, onShapeCreated: (bounds: LeafletLatLngBounds) => Promise<boolean>): LeafletMap {
 	const map: LeafletMap = L.map(mapid, {
-		maxZoom: 21,
+		maxZoom: 22,
 		center: [35.943, 136.188]
 	});
 
 	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxNativeZoom: 19,
-    maxZoom: 21,
+    maxZoom: 22,
   }).addTo(map);
 
   /** マーカーや情報ボックスを保持するための専用レイヤーグループ。 */
