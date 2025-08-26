@@ -17,6 +17,12 @@ let mapData: MapDataItem[] = [];
 const modal = document.getElementById("infoModal") as HTMLElement & { clear: () => void; };
 /** マップの境界座標を表示するHTML要素。 */
 const boundsDisplay = document.getElementById("map-bounds-display") as HTMLElement;
+/** ドロワー */
+const drawerComponent = document.getElementById("drawer") as HTMLElement & {
+    open: () => void;
+    close: () => void;
+    toggle: () => void;
+}
 
 /** 情報レイヤーの表示/非表示を切り替えるズームレベルの閾値。 */
 const VISIBILITY_ZOOM_THRESHOLD = 15;
@@ -43,7 +49,7 @@ function updateBoundsDisplay(): void {
 }
 
 /**
- * 現在のズームレベルに応じて情報レイヤーの表示/非表示を切り替えます。
+ * 現在のズームレベルに応じて領域レイヤーの表示/非表示を切り替えます。
  */
 function updateLayerVisibility(): void {
     const currentZoom = map.getZoom();
@@ -141,6 +147,7 @@ function showInfoModal(): Promise<MapDataInfo | null> {
             modal.style.display = "none";
             modal.removeEventListener("submit", onSubmit);
             modal.removeEventListener("cancel", onCancel);
+            drawerComponent.close();
         };
 
         modal.addEventListener("submit", onSubmit, { once: true });
@@ -154,6 +161,7 @@ function showInfoModal(): Promise<MapDataInfo | null> {
  * @returns {Promise<boolean>} ユーザーが情報を入力し、データが正常に追加された場合はtrue、キャンセルされた場合はfalseを解決するPromise。
  */
 async function handleShapeCreated(bounds: LeafletLatLngBounds): Promise<boolean> {
+    drawerComponent.open()
     const info = await showInfoModal();
     if (info) {
         const southWest = bounds.getSouthWest();
@@ -180,9 +188,9 @@ const map: LeafletMap = initMap("map", handleShapeCreated);
 map.setView([35.943, 136.188], 15);
 
 // イベントリスナーを設定
-map.on("moveend", updateBoundsDisplay);
+// map.on("moveend", updateBoundsDisplay);
 map.on("zoomend", updateLayerVisibility); // ズーム完了時に表示を更新
 
 // 初期化処理の実行
 loadData();
-updateBoundsDisplay();
+// updateBoundsDisplay();

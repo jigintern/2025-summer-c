@@ -46,27 +46,26 @@
         }
     </style>
 </head>
+
 <body>
+
 <div class="body-container">
     <div id="map"></div>
 
-    <div class="info-panel">
-        <h2>Mapの領域</h2>
-        <p>現在表示されている領域:</p>
+<!--    <div class="info-panel">-->
+<!--        <h2>Mapの領域</h2>-->
+<!--        <p>現在表示されている領域:</p>-->
         <div id="map-bounds-display"></div>
-    </div>
+<!--    </div>-->
 </div>
 
-<drawer-component>
-
-  <hr>
-
+<drawer-component id="drawer">
     <post-form id="infoModal" style="display: none;"></post-form>
 </drawer-component>
 
-<script src="./post-form.ts" type="module"></script>
+<script src="./components/post-form.ts" type="module"></script>
+<script src="./components/drawer-component.ts" type="module"></script>
 <script src="./map.ts" type="module"></script>
-<script src="./drawer-component.ts" type="module"></script>
 
 </body>
 </html>

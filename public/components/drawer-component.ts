@@ -1,3 +1,5 @@
+
+
 class DrawerComponent extends HTMLElement {
   private drawer: HTMLElement | null = null;
   private toggleButton: HTMLElement | null = null;
@@ -20,30 +22,34 @@ class DrawerComponent extends HTMLElement {
 
         .drawer {
           position: fixed; /* 画面に固定 */
-          top: 0;
-          right: 0;
-          height: 100vh; /* 画面の高さ一杯 */
-          width: 300px; /* ドロワーの幅 */
+          bottom: 0;
+          left: 0;
+          height: 80vh; 
+          width: 100vw; 
           background-color: white;
           box-shadow: -2px 0 5px rgba(0,0,0,0.2);
-          transform: translateX(100%); /* 初期状態では画面外に隠す */
+          transform: translateY(70vh); 
           transition: transform 0.3s ease-in-out;
           z-index: 1000;
-          padding: 20px;
+          padding: 15px;
           box-sizing: border-box;
         }
 
         .drawer.is-open {
-          transform: translateX(0); /* is-openクラスが付くと表示される */
+          transform: translateY(0);
         }
 
         .toggle-button {
           /* ボタンのスタイルはお好みで調整してください */
-          position: fixed;
-          top: 15px;
-          right: 15px;
+          position: absolute;
+          width: 40%;
+          height: 1em;
+          left: 50%;
+          transform: translateX(-50%);
+          margin: 0 auto;
           z-index: 1001;
-          padding: 10px 15px;
+          text-align: center;
+          padding: 0;
           background-color: #007bff;
           color: white;
           border: none;
@@ -52,11 +58,10 @@ class DrawerComponent extends HTMLElement {
         }
       </style>
 
-      <button class="toggle-button">開く</button>
       <div class="drawer">
-        <!-- ↓↓↓ ここが重要 ↓↓↓ -->
+        <button class="toggle-button"></button>
+        <!-- ↓↓↓ ここに外部のHTMLが挿入される ↓↓↓ -->
         <slot></slot>
-        <!-- ↑↑↑ ここに外部のHTMLが挿入されます ↑↑↑ -->
       </div>
     `;
 
@@ -80,3 +85,4 @@ class DrawerComponent extends HTMLElement {
 }
 
 customElements.define('drawer-component', DrawerComponent);
+

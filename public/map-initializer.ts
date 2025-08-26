@@ -57,9 +57,8 @@ export function initMap(mapid: string, onShapeCreated: (bounds: LeafletLatLngBou
 
 		const content = `
 			<div class="info-box">
-				<h3>投稿者: ${data.posterName}</h3>
-				<p><strong>年代:</strong> ${data.era}</p>
 				<p>${data.bodyText.replace(/\n/g, '<br>')}</p>
+				<div style="display: flex; justify-content: space-between;">${data.posterName} <p> ${data.era}</p></div>
 			</div>
 		`;
 
