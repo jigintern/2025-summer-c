@@ -75,7 +75,8 @@ class PostForm extends HTMLElement {
 		const posterName =
 			(this.shadowRoot.getElementById('posterName') as HTMLInputElement)
 				.value;
-            (this.shadowRoot.getElementById('era-lte') as HTMLInputElement).value;
+            const eraGt = (this.shadowRoot.getElementById('era-gt') as HTMLInputElement).value;
+            const eraLte = (this.shadowRoot.getElementById('era-lte') as HTMLInputElement).value;
         
         // Validate that both eraGt and eraLte are non-empty and numeric
         if (

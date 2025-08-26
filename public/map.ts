@@ -82,11 +82,19 @@ function showInfoModal(): Promise<MapDataInfo | null> {
 async function handleShapeCreated(bounds: LeafletLatLngBounds): Promise<boolean> {
     drawerComponent.open()
     const info = await showInfoModal();
-    if (info) {
+    if (info && 'era' in info) {
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
 
-        const lte = parseInt(lteStr, 10);
+        const eraParts = (info.era as string).split('-');
+        if (eraParts.length !== 2) {
+            alert("時代の入力形式が正しくありません。例: '1980-1990' のように入力してください。");
+            return false;
+        }
+
+        const gt = parseInt(eraParts[0], 10);
+        const lte = parseInt(eraParts[1], 10);
+
         if (Number.isNaN(gt) || Number.isNaN(lte)) {
             alert("時代の入力形式が正しくありません。例: '1980-1990' のように入力してください。");
             return false;
