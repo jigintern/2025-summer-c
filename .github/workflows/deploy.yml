@@ -29,7 +29,7 @@ jobs:
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "taiki-watan-2025-summer-75"
+          project: "c-test-deno-bundle"
           entrypoint: "main.ts"
           root: ""
           
