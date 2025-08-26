@@ -1,4 +1,4 @@
-import { PostSubmission, QueryParams } from '../types/postData';
+import { PostSubmission, QueryParams } from "../types/postData.ts";
 
 /**
  * モックデータ用のデータベース（配列）
@@ -58,7 +58,7 @@ export const queryJson = async (params: QueryParams): Promise<PostSubmission[]> 
     });
     const res = JSON.stringify(filteredData, null, 2) // サーバーからデータが返ってきたと思うことにする
 
-    // :以後に返り血の型を入れる
+    // :以後に返り値の型を入れる
     /*
     const parsedData:  = JSON.parse(res);
 
