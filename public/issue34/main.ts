@@ -65,8 +65,9 @@ queryForm.addEventListener('submit', async (e) => {
         x: 0, y: 0, x2: 0, y2: 0, // HTMLにないので仮の値
     };
     try {
-        const result = await queryJson(params);
-        const resultJson = JSON.parse(result);
+        // const result = await queryJson(params);
+        // const resultJson = JSON.parse(result);
+        const resultJson =  await queryJson(params);
         queryResultEl.textContent = JSON.stringify(resultJson, null, 2);
     } catch (error) {
         queryResultEl.textContent = `エラーが発生しました: ${error}`;

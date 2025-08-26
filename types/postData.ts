@@ -12,13 +12,13 @@ export interface Decade {
     lte: number;
     gt: number;
 }
-/*
+
 export interface Thread {
     id: number;
     comment: string;
     created_at: string;
 }
-*/
+
 /**
  * 投稿するデータの型
  */
@@ -27,8 +27,8 @@ export interface  PostSubmission{
     coordinate: Coordinate;
     decade: Decade;
     comment: string;
-    // photos: string[];
-    //thread: Thread[];
+    photos: string[];
+    thread: Thread[];
     created_at: string;
 }
 

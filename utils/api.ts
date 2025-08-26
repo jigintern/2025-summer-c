@@ -45,7 +45,7 @@ export const postJson = async (data: PostSubmission): Promise<Response> => {
  * @param params - 検索用のクエリパラメータ
  * @returns 検索結果のデータ（JSON文字列）
  */
-export const queryJson = async (params: QueryParams): Promise<string> => {
+export const queryJson = async (params: QueryParams): Promise<PostSubmission[]> => {
     console.log('【MOCK】以下のパラメータでデータを検索しました:', params);
 
     // ここにサーバーに対してgetを送信する処理
@@ -65,6 +65,8 @@ export const queryJson = async (params: QueryParams): Promise<string> => {
     // 検索結果をJSON文字列にして返す
     return Promise.resolve(parsedData);
     */
-    return Promise.resolve(JSON.stringify(filteredData, null, 2));
+    return filteredData;
+
+    //return Promise.resolve(JSON.stringify(filteredData, null, 2));
 
 };
