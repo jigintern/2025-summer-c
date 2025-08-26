@@ -12,10 +12,17 @@ const content: string = `
       h3, p {
         margin: 5px 0;
       }
-      input, textarea {
+      .info-box input, .info-box textarea {
         width: 95%;
         padding: 5px;
         margin-top: 5px;
+      }
+      .period input {
+        width: 4em;
+        height: 80%;
+      }
+      .period-start {
+        font-size: .8em;      
       }
       button {
         padding: 8px 12px;
@@ -24,12 +31,11 @@ const content: string = `
       }
     </style>
     <div class="info-box">
-        <h3>内容: <textarea id="bodyText" rows="4"></textarea></h3>
-        <p>投稿者: <input type="text" id="posterName"></p>
-        <div>
+        <h3>内容<textarea id="bodyText" rows="4"></textarea></h3>
+        <p>投稿者<input type="text" id="posterName"></p>
+        <div class="period">
             <p>期間</p>
-            <p>およそ<input type="number" id="era-gt" minlength="4" maxlength="4">年から(任意)</p>
-            <p>およそ<input type="number" id="era-lte" minlength="4" maxlength="4">年まで(必須)</p>
+            <p><span class="period-start">( <input type="number" id="era-gt" minlength="4" maxlength="4"> 年から)</span> <input type="number" id="era-lte" minlength="4" maxlength="4"> 年まで(必須)</p>
         </div>
     </div>
     <button id="submitInfo">Submit</button>
