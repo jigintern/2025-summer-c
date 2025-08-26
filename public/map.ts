@@ -86,9 +86,11 @@ async function handleShapeCreated(bounds: LeafletLatLngBounds): Promise<boolean>
         const sw = bounds.getSouthWest();
         const ne = bounds.getNorthEast();
 
-        const [gtStr, lteStr] = info.era.split('-');
-        const gt = parseInt(gtStr, 10);
         const lte = parseInt(lteStr, 10);
+        if (Number.isNaN(gt) || Number.isNaN(lte)) {
+            alert("時代の入力形式が正しくありません。例: '1980-1990' のように入力してください。");
+            return false;
+        }
 
         const submission: PostSubmission = {
             name: info.posterName,
