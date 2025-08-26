@@ -31,7 +31,7 @@ class DrawerComponent extends HTMLElement {
           transform: translateY(70vh); 
           transition: transform 0.3s ease-in-out;
           z-index: 1000;
-          padding: 15px;
+          padding: 20px 15px 0;
           box-sizing: border-box;
         }
 
@@ -42,19 +42,34 @@ class DrawerComponent extends HTMLElement {
         .toggle-button {
           /* ボタンのスタイルはお好みで調整してください */
           position: absolute;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 3em;
+          z-index: 1001;
+          padding: 0;
+          border: none;
+          background: white;
+          cursor: pointer;
+        }
+        .toggle-button::after {
+          content: "";
+          position: absolute;
           width: 40%;
-          height: 1em;
+          height: 10px;
+          top: 50%;
           left: 50%;
-          transform: translateX(-50%);
+          transform: translateX(-50%) translateY(-50%);
           margin: 0 auto;
           z-index: 1001;
           text-align: center;
           padding: 0;
-          background-color: #007bff;
+          background-color: #e5e5e5;
           color: white;
-          border: none;
+          
           border-radius: 5px;
-          cursor: pointer;
+          
+            
         }
       </style>
 

@@ -24,9 +24,9 @@ const content: string = `
       }
     </style>
     <div class="info-box">
-        <h3>投稿者: <input type="text" id="posterName"></h3>
-        <p><strong>年代:</strong> <input type="text" id="era"></p>
-        <p><textarea id="bodyText" rows="4"></textarea></p>
+        <h3>内容: <textarea id="bodyText" rows="4"></textarea></h3>
+        <p>投稿者: <input type="text" id="posterName"></p>
+        <p>年代: <input type="text" id="era"></p>
     </div>
     <button id="submitInfo">Submit</button>
     <button id="cancelInfo">Cancel</button>
