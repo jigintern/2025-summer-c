@@ -7,7 +7,7 @@
 
 import { initMap } from "./map-initializer.ts";
 import { MapDataInfo } from "../types/map.ts";
-import { LeafletMap, LeafletLatLngBounds, LeafletGlobal } from "../types/leaflet.ts";
+import { LeafletMap, LeafletLayer, LeafletGlobal } from "../types/leaflet.ts";
 import { postJson, queryJson } from "../utils/api.ts";
 import { PostSubmission } from "../types/postData.ts";
 
@@ -75,17 +75,14 @@ function showInfoModal(): Promise<MapDataInfo | null> {
 }
 
 /**
- * ユーザーがマップ上に新しい矩形を描画した際の処理を行います。
- * @param {LeafletLatLngBounds} bounds - 描画された矩形の地理的境界。
+ * ユーザーがマップ上に新しい図形を描画した際の処理を行います。
+ * @param {LeafletLayer} layer - 描画された図形レイヤー。
  * @returns {Promise<boolean>} ユーザーが情報を入力し、データが正常に追加された場合はtrue、キャンセルされた場合はfalseを解決するPromise。
  */
-async function handleShapeCreated(bounds: LeafletLatLngBounds): Promise<boolean> {
+async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
     drawerComponent.open()
     const info = await showInfoModal();
     if (info && 'era' in info) {
-        const sw = bounds.getSouthWest();
-        const ne = bounds.getNorthEast();
-
         const eraParts = (info.era as string).split('-');
         if (eraParts.length !== 2) {
             alert("時代の入力形式が正しくありません。例: '1980-1990' のように入力してください。");
@@ -102,13 +99,7 @@ async function handleShapeCreated(bounds: LeafletLatLngBounds): Promise<boolean>
 
         const submission: PostSubmission = {
             name: info.posterName,
-            coordinate: {
-                y: sw.lat,
-                x: sw.lng,
-                h: ne.lat - sw.lat,
-                w: ne.lng - sw.lng,
-                angle: 0,
-            },
+            geometry: layer.toGeoJSON(),
             decade: { gt, lte },
             comment: info.bodyText,
             photos: [],
