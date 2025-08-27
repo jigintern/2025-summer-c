@@ -43,14 +43,14 @@ export function initMap(mapid: string, onShapeCreated: (layer: LeafletLayer) => 
    * @returns {LeafletLayer} 作成されたレイヤー。
    */
 	map.addInfoBox = function(data: PostSubmission): LeafletLayer {
-        // GeoJSONからレイヤーを作成
+    // GeoJSONからレイヤーを作成
 		const geoJsonLayer = L.geoJSON(data.geometry, {
-            style: {
-                color: "#0033ff",
-                weight: 2,
-                fillOpacity: 0.1
-            }
-        });
+      style: {
+        color: "#0033ff",
+        weight: 2,
+        fillOpacity: 0.1
+      }
+    });
 
 		const content = `
 			<div class="info-box">

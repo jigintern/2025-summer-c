@@ -1,11 +1,13 @@
 // types/leaflet.ts
 import { PostSubmission } from "./postData.ts";
+import {GeoJSON} from "npm:@types/geojson@7946.0.16";
 
 // Leafletレイヤーの最小限の定義
 export interface LeafletLayer {
   addTo(map: LeafletMap): this;
   bindTooltip(content: string, options: object): this;
   getBounds(): LeafletLatLngBounds;
+  toGeoJSON(): GeoJSON;
 }
 
 // L.LayerGroupの最小限の定義
@@ -32,7 +34,7 @@ export interface LeafletMap {
   // map-initializer.ts で追加されたカスタムプロパティ
   markerLayer: LeafletLayerGroup;
   drawnItems: LeafletLayerGroup; // 追加
-  addInfoBox: (data: PostSubmission) => LeafletRectangle;
+  addInfoBox: (data: PostSubmission) => LeafletLayer;
 }
 
 /** L.LatLngの最小限の定義 */
@@ -93,4 +95,5 @@ export interface LeafletGlobal {
         Draw: new (options: object) => LeafletControl;
     };
     Draw: LeafletDraw;
+    geoJSON(geojson?: GeoJSON, options?: object): LeafletLayerGroup;
 }
