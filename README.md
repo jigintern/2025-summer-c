@@ -1,24 +1,60 @@
-# template-deno-dev
+# [ここにタイトル]
+![deno compatibility](https://shield.deno.dev/deno/v2.4.4)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+## 概要
 
-[Deno](https://deno.land/)を使った開発のテンプレートです。  
-[Deno Deploy](https://deno.com/deploy)を利用して外部へ公開することを想定しています。  
+地図上に思い出を残しておけるアプリです。
 
-## Deno Deploy の利用方法
+思い出を領域として地図上に投稿・表示ができます。
 
-↓以上の詳細は公式リファレンスへ。
+## ローカルの実行コマンド
 
-1. [Deno Deploy](https://deno.com/deploy)にアクセスして、右上の「Sign In」からGitHubアカウントでのOAuthログインでアカウントを作成orログインしてください。
-2. 青い「+ New Project」から「Create a project」画面に遷移して、「Deploy an existing GitHub repository」側から GitHub repository の「Select a repository」をクリック
-3. Create a project from GitHub の画面で、デプロイするリポジトリを選んでこのリポジトリをテンプレートにした場合は「No build step」で、メインのDenoのコードが書いてあるファイルをエントリポイントに指定して「Create & Deploy」します。
-4. ダイアログが出て Deployed になれば成功。右上の青い「View」からデプロイされたページが確認できるはずです。
+`deno task start`でpublic/main.jsが自動生成、実行されます。
 
-## コミットテンプレートとemoji prefixについて
+## Deno Deployのやり方
 
-コミットテンプレートは以下のようにして使用できます。  
+Deno Deploy：
+https://dash.deno.com/account/overview
 
-```shell
-cd <リポジトリ直下>
-git config commit.template ./.commit_template
+Build Stepで`deno bundle --platform=browser --minify public/main.ts -o public/main.js`を入力してください。
+
+Entrypointは`main.ts`です。
+
+mainブランチの場合：
+![Build Step=deno bundle --platform=browser --minify public/main.ts -o public/main.js,Entrypointは=main.ts](imgs/build_sample.png)
+
+
+## 領域データについて
+
+送受信で扱う領域データは以下のとおり
+```
+{
+  name: "投稿者名",
+  geometry: {
+    type: "Feature",
+    properties: {},
+    geometry: {
+      type: "Polygon",
+      coordinates: [
+        [
+          [経度_1, 緯度],[経度_2, 緯度_2], ...
+        ]
+      ]
+    }
+  },
+  decade: { gt: 何年から, lte: 何年まで },
+  comment: "投稿者コメント",
+  photos: ["画像のパス（入れば）"],
+  thread: ["第三者コメント（入れば）"],
+  created_at: "作成日時"
+}
 ```
 
-emoji prefix にはコミット履歴が可愛くなる他にもメリットがありますが、コミット履歴が可愛くなるのが好きで使ってます。
+
+## 実装したAPI
+### GET /query-json?year=&x=&y=&x2=&y2=
+指定した年代・範囲内にある領域データを取得します。
+xが経度　、yが緯度です。
+
+### POST /post-json
+bodyで上記の領域データを持たせると、内容がデータベースに保存されます。
