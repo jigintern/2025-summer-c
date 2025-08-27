@@ -1,6 +1,6 @@
 import {ItemData} from "../types/schema.ts";
-export async function findByDecade(kv: Deno.Kv, lte: number, gt: number){
-    if(lte === -1){
+export async function findByDecade(kv: Deno.Kv, gte: number, lt: number){
+    if(gte === -1){
         const items = kv.list({
             prefix: ["itemsDecades"],
         })
@@ -11,8 +11,8 @@ export async function findByDecade(kv: Deno.Kv, lte: number, gt: number){
         return ret;
     }
     const items = kv.list({
-		start: ["itemsDecades", lte],
-		end: ["itemsDecades", gt]
+		start: ["itemsDecades", gte],
+		end: ["itemsDecades", lt]
 	});
     const ret: any[] = [];
     for await (const item of items) {
@@ -31,13 +31,17 @@ export async function find(kv: Deno.Kv, year: number, x: number, y: number, x2: 
     for await (const i of retID){
         const dat = await findById(kv, i.value);
         const data : ItemData = dat["value"] as ItemData;
-        const con = data["coordinate"];
-        const dataX = con["x"];
-        const dataY = con["y"];
-        if(x <= dataX && dataX <= x2 && y <= dataY && dataY <= y2){
-            ans.push(JSON.stringify(data));
-        }
+        const con = data["geometry"]["geometry"]["coordinates"];
+        con.forEach((co: any) => {
+            co.forEach((c: any) => {
+                const dataX = c[0];
+                const dataY = c[1];
+                if(x <= dataX && dataX <= x2 && y <= dataY && dataY <= y2){
+                    ans.push(data);
+                    return;
+                }
+            });
+        });
     }
-    console.log(x, y, x2, y2);
     return ans;
 }

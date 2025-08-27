@@ -11,9 +11,6 @@ export async function query(kv: Deno.Kv, req: Request) {
     // dataView(kv);
 
     const pathname = new URL(req.url).pathname;
-    if (req.method === 'GET' && pathname === '/welcome-message') {
-        return new Response('jigインターンへようこそ！');
-    }
 
     if (req.method === 'POST' && pathname === '/post-json') {
         const bod = await req.json();
@@ -23,12 +20,17 @@ export async function query(kv: Deno.Kv, req: Request) {
         let yearesr = 1;
         let yearesl = 0;
         try{
-            yearesr = body["decade"]["gt"];
-            yearesl = body["decade"]["lte"] === -1 ? yearesr - 50 : body["decade"]["lte"];
+            yearesl = body["decade"]["gt"];
+            yearesr = body["decade"]["lte"]+1 ?? yearesl+51;
         }catch (e) {}
-        for (let i = yearesl; i < yearesr; i+=10) {
+        // console.log(yearesl, yearesr)
+        for (let i = yearesl; i < yearesr; i++) {
             const id2 = ulid();
             kv.set(["itemsDecades",i,id2], id);
+        }
+        if(yearesr <= yearesl){
+            const id2 = ulid();
+            kv.set(["itemsDecades",yearesr-1,id2], id);
         }
         return Response.json(body);
     }
@@ -53,6 +55,9 @@ export async function query(kv: Deno.Kv, req: Request) {
         const ret = await find(kv, year, parseFloat(x),parseFloat(y),parseFloat(x2),parseFloat(y2));
         return Response.json(ret);
     }
+
+    // const ret = await find(kv,-1,0,0,1000,1000);
+    // console.log(ret);
 
     return serveDir(req, {
         fsRoot: 'public',

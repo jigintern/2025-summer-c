@@ -1,10 +1,4 @@
-export interface Coordinate {
-    x: number;
-    y: number;
-    h: number;
-    w: number;
-    angle: number;
-}
+import {GeoJSON} from "npm:@types/geojson@7946.0.16";
 
 export interface Decade {
     lte: number;
@@ -24,7 +18,7 @@ export interface Content {
 
 export interface ItemData {
     name: string;
-    coordinate: Coordinate;
+    geometry: GeoJSON;
     decade: Decade | null;
     content: Content;
     thread: ThreadItem[];

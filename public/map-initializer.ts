@@ -5,12 +5,10 @@
 
 import {
   LeafletMap,
-  LeafletLatLngBounds,
   LeafletGlobal,
   LeafletDrawEvent,
-  LeafletRectangle,
-  LeafletLayerGroup,
-  LeafletEvent
+  LeafletEvent,
+  LeafletLayer
 } from "../types/leaflet.ts";
 import { PostSubmission } from "../types/postData.ts";
 
@@ -20,10 +18,10 @@ declare const L: LeafletGlobal;
 /**
  * Leafletマップを初期化し、指定されたHTML要素にマウントします。
  * @param {string} mapid - マップをマウントするHTML要素のID。
- * @param {(bounds: LeafletLatLngBounds) => Promise<boolean>} onShapeCreated - ユーザーが図形を描画したときに呼び出されるコールバック関数。
+ * @param {(layer: LeafletLayer) => Promise<boolean>} onShapeCreated - ユーザーが図形を描画したときに呼び出されるコールバック関数。
  * @returns {LeafletMap} 初期化されたLeafletマップのインスタンス。
  */
-export function initMap(mapid: string, onShapeCreated: (bounds: LeafletLatLngBounds) => Promise<boolean>): LeafletMap {
+export function initMap(mapid: string, onShapeCreated: (layer: LeafletLayer) => Promise<boolean>): LeafletMap {
 	const map: LeafletMap = L.map(mapid, {
 		maxZoom: 22,
 		center: [35.943, 136.188]
@@ -40,19 +38,19 @@ export function initMap(mapid: string, onShapeCreated: (bounds: LeafletLatLngBou
 	map.markerLayer.addTo(map);
 
   /**
-   * マップに情報ボックス（矩形とツールチップ）を追加するカスタムメソッド。
+   * マップに情報ボックス（図形とツールチップ）を追加するカスタムメソッド。
    * @param data - 表示する情報を含むデータオブジェクト。
-   * @returns {LeafletRectangle} 作成された矩形レイヤー。
+   * @returns {LeafletLayer} 作成されたレイヤー。
    */
-	map.addInfoBox = function(data: PostSubmission): LeafletRectangle {
-		const { y, x, h, w } = data.coordinate;
-        const bounds: [[number, number], [number, number]] = [[y, x], [y + h, x + w]];
-
-		const rect: LeafletRectangle = L.rectangle(bounds, {
-			color: "#0033ff",
-			weight: 2,
-			fillOpacity: 0.1
-		});
+	map.addInfoBox = function(data: PostSubmission): LeafletLayer {
+    // GeoJSONからレイヤーを作成
+		const geoJsonLayer = L.geoJSON(data.geometry, {
+      style: {
+        color: "#0033ff",
+        weight: 2,
+        fillOpacity: 0.1
+      }
+    });
 
 		const content = `
 			<div class="info-box">
@@ -61,14 +59,14 @@ export function initMap(mapid: string, onShapeCreated: (bounds: LeafletLatLngBou
 			</div>
 		`;
 
-		rect.bindTooltip(content, {
+		geoJsonLayer.bindTooltip(content, {
 			permanent: true,
 			direction: 'center',
 			className: 'info-tooltip'
 		});
 
-		this.markerLayer.addLayer(rect);
-		return rect;
+		this.markerLayer.addLayer(geoJsonLayer);
+		return geoJsonLayer;
 	};
 
   /** ユーザーによって描画された図形を一時的に保持するレイヤーグループ。 */
@@ -83,9 +81,8 @@ export function initMap(mapid: string, onShapeCreated: (bounds: LeafletLatLngBou
         // レイヤーを一時的にdrawnItemsグループに追加して可視化する
         map.drawnItems.addLayer(layer);
 
-        const bounds = layer.getBounds();
         // モーダル操作（データ送信 or キャンセル）を待つ
-        await onShapeCreated(bounds);
+        await onShapeCreated(layer);
 
         // 永続的なレイヤーはmarkerLayerに追加されるため、
         // 操作が完了したら、この一時的なレイヤーは常に削除する
