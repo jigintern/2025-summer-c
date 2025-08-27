@@ -1,22 +1,22 @@
 // types/leaflet.ts
+import { PostSubmission } from "./postData.ts";
 
 // Leafletレイヤーの最小限の定義
 export interface LeafletLayer {
   addTo(map: LeafletMap): this;
   bindTooltip(content: string, options: object): this;
+  getBounds(): LeafletLatLngBounds;
 }
 
 // L.LayerGroupの最小限の定義
 export interface LeafletLayerGroup extends LeafletLayer {
   clearLayers(): this;
   addLayer(layer: LeafletLayer): this;
-  removeLayer(layer: LeafletLayer): this; // この行を追加
+  removeLayer(layer: LeafletLayer): this;
 }
 
 // L.Rectangleの最小限の定義
-export interface LeafletRectangle extends LeafletLayer {
-    getBounds(): LeafletLatLngBounds;
-}
+export interface LeafletRectangle extends LeafletLayer {}
 
 /** L.Mapの最小限の定義 */
 export interface LeafletMap {
@@ -31,15 +31,8 @@ export interface LeafletMap {
 
   // map-initializer.ts で追加されたカスタムプロパティ
   markerLayer: LeafletLayerGroup;
-  addInfoBox: (data: {
-    lat1: number;
-    lng1: number;
-    lat2: number;
-    lng2: number;
-    posterName: string;
-    era: string;
-    bodyText: string;
-  }) => LeafletRectangle;
+  drawnItems: LeafletLayerGroup; // 追加
+  addInfoBox: (data: PostSubmission) => LeafletRectangle;
 }
 
 /** L.LatLngの最小限の定義 */
@@ -61,7 +54,7 @@ export interface LeafletEvent {
 
 // 描画作成時の特定のイベント
 export interface LeafletDrawEvent extends LeafletEvent {
-  layer: LeafletRectangle;
+  layer: LeafletLayer;
   layerType: string;
 }
 
@@ -69,6 +62,25 @@ export interface LeafletDrawEvent extends LeafletEvent {
 export interface LeafletControl {
     // コントロールの基本
 }
+
+// 描画ハンドラのインターフェース
+export interface LeafletDrawer {
+    enable(): void;
+}
+
+// L.Drawのツールを定義
+export interface LeafletDrawTools {
+    Rectangle: new (map: LeafletMap, options?: object) => LeafletDrawer;
+    Polygon: new (map: LeafletMap, options?: object) => LeafletDrawer;
+    Circle: new (map: LeafletMap, options?: object) => LeafletDrawer;
+}
+
+// L.Drawのイベントとツールを結合
+export type LeafletDraw = LeafletDrawTools & {
+    Event: {
+        CREATED: string;
+    };
+};
 
 // グローバルなLオブジェクトの最小限の定義
 export interface LeafletGlobal {
@@ -80,9 +92,5 @@ export interface LeafletGlobal {
     Control: {
         Draw: new (options: object) => LeafletControl;
     };
-    Draw: {
-        Event: {
-            CREATED: string;
-        }
-    };
+    Draw: LeafletDraw;
 }
