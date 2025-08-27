@@ -1,5 +1,4 @@
 import type { PostSubmission, QueryParams } from '../types/postData.ts';
-
 const BASE_URL = 'http://localhost:8000'; // For local testing. Change for production.
 
 export const postJson = async (data: PostSubmission): Promise<Response> => {
@@ -12,7 +11,6 @@ export const postJson = async (data: PostSubmission): Promise<Response> => {
 };
 
 export const queryJson = async (params: QueryParams): Promise<PostSubmission[]> => {
-
     const q = Object.keys(params).map((key) => {
         return key + '=' + params[key as keyof QueryParams];
     }).join('&');
