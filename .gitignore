@@ -8,3 +8,6 @@
 .vscode
 
 deno.lock
+
+# Deploy用に生成されるmain.js
+public/main.js
