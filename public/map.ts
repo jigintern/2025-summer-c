@@ -128,7 +128,7 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
 
 // ================== 初期化処理 ==================
 /** Leafletマップのインスタンス。 */
-const map: LeafletMap = initMap("map", handleShapeCreated);
+export const map: LeafletMap = initMap("map", handleShapeCreated);
 map.setView([35.943, 136.188], 15);
 
 // 初期データを一度だけ、全範囲で読み込む
