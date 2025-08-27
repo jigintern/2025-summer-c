@@ -1,9 +1,9 @@
 name: Deploy
 on:
   push:
-    branches: feature/#44-deploy
+    branches: main
   pull_request:
-    branches: feature/#44-deploy
+    branches: main
 
 jobs:
   deploy:
