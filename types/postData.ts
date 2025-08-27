@@ -1,5 +1,7 @@
 // types/photo-data.ts
 
+import {GeoJSON} from "npm:@types/geojson@7946.0.16";
+
 export interface Coordinate {
     x: number;
     y: number;
@@ -24,7 +26,7 @@ export interface Thread {
  */
 export interface  PostSubmission{
     name: string;
-    coordinate: Coordinate;
+    geometry: GeoJSON
     decade: Decade;
     comment: string;
     photos: string[];
