@@ -8,11 +8,9 @@ export async function query(kv: Deno.Kv, req: Request) {
 
     // dataAdd(kv);
     // dataDel(kv);
+    // dataView(kv);
 
     const pathname = new URL(req.url).pathname;
-    if (req.method === 'GET' && pathname === '/welcome-message') {
-        return new Response('jigインターンへようこそ！');
-    }
 
     if (req.method === 'POST' && pathname === '/post-json') {
         const bod = await req.json();
