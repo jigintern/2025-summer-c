@@ -6,7 +6,7 @@
     "egmap": "./lib/egmap.ts"
   },
   "tasks": {
-    "start": "deno bundle --platform=browser --minify  public/main.ts -o public/main.js && deno run --watch --allow-net --allow-read --allow-write --allow-run --allow-env --unstable-kv main.ts"
+    "start": "deno bundle --platform=browser --minify public/main.ts -o public/main.js && deno run --watch --allow-net --allow-read --allow-write --allow-run --allow-env --unstable-kv main.ts"
   },
   "compilerOptions": {
     "lib": [
