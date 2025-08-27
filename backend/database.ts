@@ -1,6 +1,6 @@
 import {ItemData} from "../types/schema.ts";
-export async function findByDecade(kv: Deno.Kv, lte: number, gt: number){
-    if(lte === -1){
+export async function findByDecade(kv: Deno.Kv, gte: number, lt: number){
+    if(gte === -1){
         const items = kv.list({
             prefix: ["itemsDecades"],
         })
@@ -11,8 +11,8 @@ export async function findByDecade(kv: Deno.Kv, lte: number, gt: number){
         return ret;
     }
     const items = kv.list({
-		start: ["itemsDecades", lte],
-		end: ["itemsDecades", gt]
+		start: ["itemsDecades", gte],
+		end: ["itemsDecades", lt]
 	});
     const ret: any[] = [];
     for await (const item of items) {
@@ -36,7 +36,6 @@ export async function find(kv: Deno.Kv, year: number, x: number, y: number, x2: 
             co.forEach((c: any) => {
                 const dataX = c[0];
                 const dataY = c[1];
-                // console.log(dataX,dataY)
                 if(x <= dataX && dataX <= x2 && y <= dataY && dataY <= y2){
                     ans.push(data);
                     return;

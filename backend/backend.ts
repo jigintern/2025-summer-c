@@ -18,14 +18,14 @@ export async function query(kv: Deno.Kv, req: Request) {
         const bod = await req.json();
         const body : ItemData = bod as ItemData;
         const id = ulid();
-        // console.log(body);
         kv.set(["items",id], body);
         let yearesr = 1;
         let yearesl = 0;
         try{
-            yearesr = body["decade"]["gt"];
-            yearesl = body["decade"]["lte"] ?? yearesr-50;
+            yearesl = body["decade"]["gt"];
+            yearesr = body["decade"]["lte"]+1 ?? yearesl+51;
         }catch (e) {}
+        // console.log(yearesl, yearesr)
         for (let i = yearesl; i < yearesr; i) {
             const id2 = ulid();
             kv.set(["itemsDecades",i,id2], id);
