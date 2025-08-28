@@ -1,6 +1,6 @@
 import type { PostSubmission, QueryParams } from '../types/postData.ts';
-const BASE_URL = 'http://localhost:8000'; // For local testing. Change for production.
-//const BASE_URL = window.location.origin;
+//const BASE_URL = 'http://localhost:8000'; // For local testing. Change for production.
+const BASE_URL = window.location.origin;
 
 export const postJson = async (data: PostSubmission): Promise<Response> => {
     const endpoint = `${BASE_URL}/post-json`;
