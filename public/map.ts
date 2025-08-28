@@ -3,13 +3,13 @@
  * これには、マップの初期化、ユーザーインタラクションの処理、サーバーとのデータ同期などが含まれます。
  */
 
-'use strict';
+"use strict";
 
-import {initMap} from "./map-initializer.ts";
-import {MapDataInfo} from "../types/map.ts";
-import {LeafletGlobal, LeafletLayer, LeafletMap} from "../types/leaflet.ts";
-import {postJson, queryJson, postComment, getComments} from "../utils/api.ts";
-import {PostSubmission} from "../types/postData.ts";
+import { initMap } from "./map-initializer.ts";
+import { MapDataInfo } from "../types/map.ts";
+import { LeafletMap, LeafletLayer, LeafletGlobal } from "../types/leaflet.ts";
+import { postJson, queryJson } from "../utils/api.ts";
+import { PostSubmission } from "../types/postData.ts";
 
 export  let allPosts: PostSubmission[] = []; // ★ 1. すべての投稿データをここに保持します
 
@@ -49,6 +49,7 @@ async function loadAndRenderData(): Promise<void> {
         console.error("Failed to load initial data:", error);
     }
 }
+
 /**
  * ユーザーからの情報入力を求めるモーダルウィンドウを表示します。
  * @returns {Promise<MapDataInfo | null>} ユーザーが情報を入力して決定した場合はその情報を、キャンセルした場合はnullを解決するPromise。
@@ -146,6 +147,7 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
         try {
             const response = await postJson(submission);
             if (response.ok) {
+                map.addInfoBox(submission);
                 allPosts.push(submission); // ★ 新しく追加したデータもallPostsに追加
 
                 const postLayer = map.addInfoBox(submission);
@@ -157,13 +159,13 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
 
                 return true;
             } else {
-                console.error('Failed to save data', await response.text());
-                alert('データの保存に失敗しました。');
+                console.error("Failed to save data", await response.text());
+                alert("データの保存に失敗しました。");
                 return false;
             }
         } catch (error) {
-            console.error('Error posting data', error);
-            alert('データの送信中にエラーが発生しました。');
+            console.error("Error posting data", error);
+            alert("データの送信中にエラーが発生しました。");
             return false;
         }
     }
@@ -196,12 +198,12 @@ export function filterMapByDecade(startYear: number, endYear: number): void {
 
 // ================== 初期化処理 ==================
 /** Leafletマップのインスタンス。 */
-export const map: LeafletMap = initMap('map', handleShapeCreated);
+export const map: LeafletMap = initMap("map", handleShapeCreated);
 
 // マップの移動範囲を全世界に制限
 const worldBounds = L.latLngBounds(
     L.latLng(-90, -180), // 南西の角
-    L.latLng(90, 180), // 北東の角
+    L.latLng(90, 180)    // 北東の角
 );
 map.setMaxBounds(worldBounds);
 
@@ -209,6 +211,36 @@ map.setView([35.943, 136.188], 15);
 
 // 初期データを一度だけ、全範囲で読み込む
 loadAndRenderData();
+
+
+const setupZoomBasedVisibility = () => {
+    const zoomThreshold = 14; // このズームレベルより小さい（縮小した）場合に非表示にする
+
+    // 処理をまとめた関数
+    const toggleInfoBoxesVisibility = () => {
+        const currentZoom = map.getZoom();
+        // ページ上にある全ての .info-box 要素を取得
+        const infoBoxes = document.querySelectorAll('.info-box');
+
+        if (currentZoom < zoomThreshold) {
+            // しきい値よりズームアウトしていたら、各要素に .info-hidden クラスを追加
+            infoBoxes.forEach(box => box.classList.add('info-hidden'));
+        } else {
+            // しきい値よりズームインしていたら、各要素から .info-hidden クラスを削除
+            infoBoxes.forEach(box => box.classList.remove('info-hidden'));
+        }
+    };
+
+    // ズーム操作が終わるたびに実行
+    map.on('zoomend', toggleInfoBoxesVisibility);
+
+    // 初期表示時にも一度チェックを実行
+    // データ読み込み後でないと .info-box が存在しないため、少し遅延させる
+    setTimeout(toggleInfoBoxesVisibility, 500); // 500ms後に実行
+};
+
+// 上記の関数を実行して機能を有効化
+setupZoomBasedVisibility();
 
 // ================== カスタム描画コントロール ==================
 
