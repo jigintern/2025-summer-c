@@ -1,9 +1,9 @@
 name: Deploy
 on:
   push:
-    branches: main
+    branches: #46-longitude
   pull_request:
-    branches: main
+    branches: #46-longitude
 
 jobs:
   deploy:
@@ -24,12 +24,12 @@ jobs:
           deno-version: v2.x
 
       - name: Build step
-        run: "deno bundle --platform=browser public/main.ts -o public/main.js"
+        run: "deno bundle --platform=browser --minify public/main.ts -o public/main.js"
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "2025-summer-13"
+          project: "kotaoka-2025-summer-63"
           entrypoint: "main.ts"
           root: ""
           
