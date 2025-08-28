@@ -8,14 +8,17 @@
 import { initMap } from "./map-initializer.ts";
 import { MapDataInfo } from "../types/map.ts";
 import { LeafletMap, LeafletLayer, LeafletGlobal } from "../types/leaflet.ts";
-import { postJson, queryJson } from "../utils/api.ts";
+import { postJson, queryJson, getComments} from "../utils/api.ts";
 import { PostSubmission } from "../types/postData.ts";
 
 export  let allPosts: PostSubmission[] = []; // ★ 1. すべての投稿データをここに保持します
 
 // Leaflet.jsから提供されるグローバルなLオブジェクト。
 declare const L: LeafletGlobal;
+// ================== 定数定義 ==================
 
+const colors = ["#EA6B6F","#FF894F","#FFCB61","#77BEF0"];
+const border = [4895,4896,4897];
 
 // ================== DOM要素取得 ==================
 
@@ -27,6 +30,33 @@ const postForm = document.getElementById('infoModal') as HTMLElement & {
 };
 
 // ================== 関数定義 ==================
+/**
+ * 領域の大きさから色を定義します
+ * @param data - データ（領域を拾う）
+ */
+const colorsSelect : string = (data:PostSubmission) => {
+    const con = data["geometry"]["geometry"]["coordinates"];
+    let minX = 0,minY = 0,maxX = 0,maxY = 0;
+    for (let i = 0; i < con.length; i++) {
+        const co = con[i];
+        for (let j = 0; j < co.length; j++) {
+            const c = co[j];
+            const dataX = c[0];
+            const dataY = c[1];
+            minX = Math.min(minX,dataX);
+            minY = Math.min(minY,dataY);
+            maxX = Math.max(maxX,dataX);
+            maxY = Math.max(maxY,dataY);
+        }
+    }
+    const s : number = (maxX - minX) * (maxY - minY);
+    for (let i = 0; i < border.length-1; i++) {
+        if(border[i] > s){
+            return colors[i];
+        }
+    }
+    return colors[colors.length-1];
+};
 
 /**
  * サーバーから地図データを非同期で読み込み、マップを再描画します。
@@ -40,7 +70,7 @@ async function loadAndRenderData(): Promise<void> {
 
         map.markerLayer.clearLayers();
         posts.forEach(post => {
-            const layer = map.addInfoBox(post);
+            const layer = map.addInfoBox(post,colorsSelect(post));
             // 領域クリック時のイベントリスナーを追加
             layer.on('click', (e) => {
                 getComments(post["id"]); //テスト用にGETリクエスト
@@ -145,10 +175,9 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
         try {
             const response = await postJson(submission);
             if (response.ok) {
-                map.addInfoBox(submission);
                 allPosts.push(submission); // ★ 新しく追加したデータもallPostsに追加
 
-                const postLayer = map.addInfoBox(submission);
+                const postLayer = map.addInfoBox(submission,colorsSelect(submission));
                 // 領域クリック時のイベントリスナーを追加
                 const respJson = await response.json();
                 postLayer.on('click', (e) => {
@@ -187,7 +216,7 @@ export function filterMapByDecade(startYear: number, endYear: number): void {
     });
 
     filteredPosts.forEach(post => {
-        map.addInfoBox(post);
+        map.addInfoBox(post,colorsSelect(post));
     });
 
     console.log(`Filtered to ${filteredPosts.length} posts between ${startYear} and ${endYear}.`);
