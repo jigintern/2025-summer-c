@@ -15,7 +15,7 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-    
+
     <link rel="stylesheet" href="style.css"/>
 
     <style>
@@ -37,18 +37,13 @@
             height: calc(100% - 50px - 32px);
             width: calc(100% - 256px - 32px);
             left: 256px;
-            box-shadow:
-                /* TVキャビネットが落とす影 */
-                10px 10px 25px rgba(0,0,0,0.4),
-                /* アクセントカラーを使用した木製フレーム */
-                0 0 0 15px var(--accent-color),
-                /* 内側のベゼルの影 */
-                inset 0 0 25px 15px rgba(0,0,0,0.6);
+            box-shadow: /* TVキャビネットが落とす影 */ 10px 10px 25px rgba(0, 0, 0, 0.4),
+                /* アクセントカラーを使用した木製フレーム */ 0 0 0 15px var(--accent-color),
+                /* 内側のベゼルの影 */ inset 0 0 25px 15px rgba(0, 0, 0, 0.6);
             margin: 20px 16px 16px;
             /*padding : 25px;*/
             text-align: center;
-            /*border-top: 2px solid var(--accent-color);*/
-            /*border-left: 2px solid var(--accent-color);*/
+            
         }
 
         .noise {
@@ -57,9 +52,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, transparent, rgba(170,170,170,0.08), rgba(136,136,136,0.07), rgba(102,102,102,0.08), rgba(68,68,68,0.09), rgba(34,34,34,0.1), rgba(68,68,68,0.08), transparent),
-            repeating-linear-gradient(transparent 0 2px, rgba(37,36,41,0.1) 2px 4px);
-            animation: moveBand 8s linear infinite;
+            background: linear-gradient(to bottom, transparent, rgba(170, 170, 170, 0.06), rgba(136, 136, 136, 0.02), rgba(102, 102, 102, 0.06), rgba(68, 68, 68, 0.08), rgba(34, 34, 34, 0.13), rgba(68, 68, 68, 0.05), transparent),
+            repeating-linear-gradient(transparent 0 2px, rgba(37, 36, 41, 0.07) 2px 4px);
+            animation: moveBand 4s linear infinite;
             z-index: 401;
             pointer-events: none;
         }

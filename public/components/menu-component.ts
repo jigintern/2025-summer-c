@@ -25,9 +25,15 @@ class MenuComponent extends HTMLElement {
           height: calc(100vh - 50px);
           transform: translateY(50px);
           width: 256px;
-          background: var(--background-color);
+            /*filter: contrast(170%) brightness(1000%);*/
+          background-color: var(--background-color);
+          background-image: url(../sand-noise.svg);
+          
+          
+          
           z-index: 1000;
         }
+       
         
         /*@media (max-width: 768px) {*/
         /*   .menu-wrapper {*/
@@ -39,6 +45,7 @@ class MenuComponent extends HTMLElement {
       </style>
 
       <div class="menu-wrapper">
+
         <slot></slot>
       </div>
     `;
