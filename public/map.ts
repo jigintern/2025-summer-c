@@ -15,14 +15,19 @@ import { PostSubmission } from "../types/postData.ts";
 declare const L: LeafletGlobal;
 
 // ================== DOM要素取得 ==================
+
 /** ユーザーインターフェースのモーダルウィンドウ要素。 */
-const modal = document.getElementById("infoModal") as HTMLElement & { clear: () => void; };
-/** ドロワー */
-const drawerComponent = document.getElementById("drawer") as HTMLElement & {
-    open: () => void;
+const modal = document.getElementById("infoModal") as HTMLElement & { 
+    clear: () => void;
+    appear: (top: number, left: number) => void;
     close: () => void;
-    toggle: () => void;
-}
+};
+/** ドロワー */
+// const drawerComponent = document.getElementById("drawer") as HTMLElement & {
+//     open: () => void;
+//     close: () => void;
+//     toggle: () => void;
+// }
 
 // ================== 関数定義 ==================
 
@@ -47,9 +52,13 @@ async function loadAndRenderData(): Promise<void> {
  * @returns {Promise<MapDataInfo | null>} ユーザーが情報を入力して決定した場合はその情報を、キャンセルした場合はnullを解決するPromise。
  */
 function showInfoModal(): Promise<MapDataInfo | null> {
+    /** ユーザーに領域描画を促す説明の要素 */
+    const introduction = document.getElementById("introduction") as HTMLElement;
+    // introduction.style.display = "none";
     modal.clear();
-    modal.style.display = "block";
-
+    // modal.style.display = "block";
+    
+    
     return new Promise((resolve) => {
         const onSubmit = (e: Event) => {
             const customEvent = e as CustomEvent;
@@ -63,10 +72,11 @@ function showInfoModal(): Promise<MapDataInfo | null> {
         };
 
         const cleanup = () => {
+            // introduction.style.display = "block";
             modal.style.display = "none";
             modal.removeEventListener("submit", onSubmit);
             modal.removeEventListener("cancel", onCancel);
-            drawerComponent.close();
+            // drawerComponent.close();
         };
 
         modal.addEventListener("submit", onSubmit, { once: true });
@@ -80,8 +90,25 @@ function showInfoModal(): Promise<MapDataInfo | null> {
  * @returns {Promise<boolean>} ユーザーが情報を入力し、データが正常に追加された場合はtrue、キャンセルされた場合はfalseを解決するPromise。
  */
 async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
-    drawerComponent.open()
+    const bounds = layer.getBounds();
+    // 描画された領域が左上に表示されるようにマップを調整
+    const zoom = map.getBoundsZoom(bounds, false); // パディングなしでズームレベルを取得
+    const nw = bounds.getNorthWest(); // 領域の北西（左上）の角を取得
+    
+    // 領域の左上の角をマップビューの左上に合わせるための中心点を計算
+    const nwPixel = map.project(nw, zoom);
+    const mapSize = map.getSize();
+    const centerPixel = nwPixel.add(mapSize.divideBy(2));
+    const newCenter = map.unproject(centerPixel, zoom);
+    
+    // 新しい中心とズームレベルを一度に設定
+    map.setView(newCenter, zoom, { animate: true });
+    
+    // drawerComponent.open()
+    modal.appear(newCenter.lat, newCenter.lng)
     const info = await showInfoModal();
+    modal.close()
+    
     if (info && 'era' in info) {
         const eraParts = (info.era as string).split('-');
         if (eraParts.length !== 2) {
