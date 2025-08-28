@@ -145,8 +145,8 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
             if (response.ok) {
                 const postLayer = map.addInfoBox(submission);
                 // 領域クリック時のイベントリスナーを追加
-                postLayer.on('click', async (e) => {
-                    const respJson = await response.json();
+                const respJson = await response.json();
+                postLayer.on('click', (e) => {
                     getComments(respJson["id"]); //テスト用にGETリクエスト
                 });
                 return true;
