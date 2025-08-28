@@ -79,24 +79,7 @@
             height: 100%;
             position: relative;
         }
-        .leaflet-map-pane {
-            position: relative;
-        }
-        .leaflet-map-pane::before {
-            content: '';
-            display: block;
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: calc(100vh - 50px - 32px);
-            width: calc(100vw - 256px - 32px);
-            z-index: 400;
-            background: red;
-            transform: revert;
-            /*background: linear-gradient(to bottom, transparent, rgba(170,170,170,0.08), rgba(136,136,136,0.07), rgba(102,102,102,0.08), rgba(68,68,68,0.09), rgba(34,34,34,0.1), rgba(68,68,68,0.08), transparent),*/
-            /*repeating-linear-gradient(transparent 0 2px, rgba(37,36,41,0.1) 2px 4px);*/
-            /*animation: moveBand 8s linear infinite;*/
-        }
+
 
         .info-panel {
             flex-shrink: 0;
@@ -142,7 +125,7 @@
 </menu-component>
 
 <div class="body-container">
-<!--    <div class="noise"></div>-->
+    <div class="noise"></div>
     <div id="map"></div>
     <div id="custom-controls"
          style="position: absolute; top: 20px; left: 70px; z-index: 500; background-color: white; padding: 5px; border: 1px solid #ccc; border-radius: 4px;">
