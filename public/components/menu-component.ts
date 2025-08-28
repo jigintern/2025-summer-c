@@ -22,7 +22,8 @@ class MenuComponent extends HTMLElement {
           display: block;
           top: 0;
           left:0;
-          height: 100vh;
+          height: calc(100vh - 50px);
+          transform: translateY(50px);
           width: 256px;
           background: var(--background-color);
           z-index: 1000;
@@ -38,7 +39,6 @@ class MenuComponent extends HTMLElement {
       </style>
 
       <div class="menu-wrapper">
-  
         <slot></slot>
       </div>
     `;
