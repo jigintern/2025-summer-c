@@ -51,10 +51,13 @@ const content: string = `
         <div class="comment-box">
             <h3>コメント一覧</h3>
             <div class="comments-list" id="commentsList"></div>
+            
         </div>
       </div>
     </div>
 `;
+
+
 
 class CommentForm extends HTMLElement {
     private _post: PostSubmission | null = null;

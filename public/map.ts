@@ -3,13 +3,15 @@
  * これには、マップの初期化、ユーザーインタラクションの処理、サーバーとのデータ同期などが含まれます。
  */
 
-'use strict';
+"use strict";
 
-import {initMap} from "./map-initializer.ts";
-import {MapDataInfo} from "../types/map.ts";
-import {LeafletGlobal, LeafletLayer, LeafletMap} from "../types/leaflet.ts";
-import {postJson, queryJson} from "../utils/api.ts";
-import {PostSubmission} from "../types/postData.ts";
+import { initMap } from "./map-initializer.ts";
+import { MapDataInfo } from "../types/map.ts";
+import { LeafletMap, LeafletLayer, LeafletGlobal } from "../types/leaflet.ts";
+import { postJson, queryJson } from "../utils/api.ts";
+import { PostSubmission } from "../types/postData.ts";
+
+export let allPosts: PostSubmission[] = []; // すべての投稿データをここに保持
 
 // Leaflet.jsから提供されるグローバルなLオブジェクト。
 declare const L: LeafletGlobal;
@@ -35,6 +37,8 @@ const postForm = document.getElementById('infoModal') as HTMLElement & {
 async function loadAndRenderData(): Promise<void> {
     try {
         const posts = await queryJson({ year: -1, x: -180, y: -90, x2: 180, y2: 90 });
+        allPosts = posts; // 取得したデータを変数に保存
+
         map.markerLayer.clearLayers();
         posts.forEach(post => {
             const layer = map.addInfoBox(post);
@@ -134,6 +138,8 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
             const response = await postJson(submission);
             if (response.ok) {
                 const newPost: PostSubmission = await response.json();
+                allPosts.push(newPost); // 新しく追加したデータもallPostsに追加
+
                 const postLayer = map.addInfoBox(newPost);
                 postLayer.on('click', () => {
                     const event = new CustomEvent('show-comments', {
@@ -143,26 +149,63 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
                     });
                     window.dispatchEvent(event);
                 });
+
                 return true;
             } else {
-                console.error('Failed to save data', await response.text());
-                alert('データの保存に失敗しました。');
+                console.error("Failed to save data", await response.text());
+                alert("データの保存に失敗しました。");
                 return false;
             }
         } catch (error) {
-            console.error('Error posting data', error);
-            alert('データの送信中にエラーが発生しました。');
+            console.error("Error posting data", error);
+            alert("データの送信中にエラーが発生しました。");
             return false;
         }
     }
     return false;
 }
 
+/**
+ * 指定された年代の範囲に基づいて地図上のマーカーをフィルタリングします。
+ * @param {number} startYear - フィルタリング範囲の開始年。
+ * @param {number} endYear - フィルタリング範囲の終了年。
+ */
+export function filterMapByDecade(startYear: number, endYear: number): void {
+    if (!allPosts) return;
+
+    map.markerLayer.clearLayers();
+
+    const filteredPosts = allPosts.filter(post => {
+        const postStart = post.decade.gt;
+        const postEnd = post.decade.lte;
+        return postEnd >= startYear && postStart <= endYear;
+    });
+
+    filteredPosts.forEach(post => {
+        const layer = map.addInfoBox(post);
+        layer.on('click', () => {
+            const event = new CustomEvent('show-comments', {
+                detail: { post },
+                bubbles: true,
+                composed: true
+            });
+            window.dispatchEvent(event);
+        });
+    });
+
+    console.log(`Filtered to ${filteredPosts.length} posts between ${startYear} and ${endYear}.`);
+}
+
+
 // ================== 初期化処理 ==================
 /** Leafletマップのインスタンス。 */
-export const map: LeafletMap = initMap('map', handleShapeCreated);
+export const map: LeafletMap = initMap("map", handleShapeCreated);
 
-const worldBounds = L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180));
+// マップの移動範囲を全世界に制限
+const worldBounds = L.latLngBounds(
+    L.latLng(-90, -180), // 南西の角
+    L.latLng(90, 180)    // 北東の角
+);
 map.setMaxBounds(worldBounds);
 
 map.setView([35.943, 136.188], 15);
@@ -181,6 +224,26 @@ map.on('moveend', () => {
 });
 
 loadAndRenderData();
+
+const setupZoomBasedVisibility = () => {
+    const zoomThreshold = 14; // このズームレベルより小さい（縮小した）場合に非表示にする
+
+    const toggleInfoBoxesVisibility = () => {
+        const currentZoom = map.getZoom();
+        const infoBoxes = document.querySelectorAll('.info-box');
+
+        if (currentZoom < zoomThreshold) {
+            infoBoxes.forEach(box => box.classList.add('info-hidden'));
+        } else {
+            infoBoxes.forEach(box => box.classList.remove('info-hidden'));
+        }
+    };
+
+    map.on('zoomend', toggleInfoBoxesVisibility);
+    setTimeout(toggleInfoBoxesVisibility, 500); 
+};
+
+setupZoomBasedVisibility();
 
 const polygonDrawer = new L.Draw.Polygon(map);
 drawPolygonButton.addEventListener('click', () => polygonDrawer.enable());
