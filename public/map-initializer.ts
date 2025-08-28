@@ -16,6 +16,34 @@ import { PostSubmission } from "../types/postData.ts";
 declare const L: LeafletGlobal;
 
 /**
+ * HTML特殊文字をエスケープする関数
+ * @param {string} text - エスケープする文字列
+ * @returns {string} エスケープされた文字列
+ */
+function escapeHtml(text: string): string {
+    // 最初に<potato-hash>タグを一時的なマーカーに置き換える
+    const potatoPlaceholder = "___POTATO_HASH_PLACEHOLDER___";
+    const closingPotatoPlaceholder = "___CLOSING_POTATO_HASH_PLACEHOLDER___";
+
+    let processedText = text
+        .replace(/<potato-hash>/g, potatoPlaceholder)
+        .replace(/<\/potato-hash>/g, closingPotatoPlaceholder);
+
+    // 通常のHTMLエスケープを行う
+    processedText = processedText
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+    // プレースホルダーを元の<potato-hash>タグに戻す
+    return processedText
+        .replace(new RegExp(potatoPlaceholder, 'g'), "<potato-hash>")
+        .replace(new RegExp(closingPotatoPlaceholder, 'g'), "</potato-hash>");
+}
+
+    /**
  * Leafletマップを初期化し、指定されたHTML要素にマウントします。
  * @param {string} mapid - マップをマウントするHTML要素のID。
  * @param {(layer: LeafletLayer) => Promise<boolean>} onShapeCreated - ユーザーが図形を描画したときに呼び出されるコールバック関数。
@@ -56,8 +84,8 @@ export function initMap(mapid: string, onShapeCreated: (layer: LeafletLayer) => 
 
 		const content = `
 			<div class="info-box">
-				<p class="info-content">${data.comment.replace(/\n/g, '<br>')}</p>
-				<div class="info-sub-data"><span>${data.name}</span> <span> ${data.decade.gt}-${data.decade.lte}</span></div>
+                <p class="info-content">${escapeHtml(data.comment).replace(/\n/g, '<br>')}</p>
+                <div class="info-sub-data"><span>${escapeHtml(data.name)}</span> <span> ${data.decade.gt}-${data.decade.lte}</span></div>
 			</div>
 		`;
 
