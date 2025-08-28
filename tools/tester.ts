@@ -1,16 +1,11 @@
 import dummy from './testcase.json' with { type: "json" };
 import { ulid } from "https://deno.land/x/ulid@v0.3.0/mod.ts";
+import {GeoJSON} from "npm:@types/leaflet@1.9.20";
 
 export async function dataAdd(kv: Deno.Kv) {
     for(const body of dummy){
-        const id = ulid();
-        kv.set(["items",id], body);
-        let yearesr = body["decade"]["gt"];
-        let yearesl = body["decade"]["lte"] === -1 ? yearesr-50 : body["decade"]["lte"];
-        for (let i = yearesl; i < yearesr; i+=10) {
-            const id2 = ulid();
-            await kv.set(["itemsDecades",i,id2], id);
-        }
+        const id = body["id"] ?? ulid();
+        await kv.set(["items",id], body);
     }
 }
 
