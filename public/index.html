@@ -49,8 +49,6 @@
             text-align: center;
             z-index: 1000;
             overflow: hidden;
-            
-
         }
 
         .noise {
@@ -103,6 +101,41 @@
         .leaflet-draw-toolbar {
             display: none !important;
         }
+        
+        
+        .draw-button {
+            position: absolute;
+            bottom: 1em;
+            left: 50%;
+            transform: translateX(-50%);
+            margin: 0 auto;
+            z-index: 401;
+            background-color: var(--accent-color);
+            color: var(--color-paper);
+            border: 2px solid black;
+            padding: 10px 20px;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 2px 1px 0 var(--color-text-main),
+            -2px 1px 0 var(--color-text-main);
+            transition: all 0.1s ease-in-out;
+        }
+
+        .draw-button:hover {
+            background-color: var(--color-accent-red-dark);
+        }
+
+        .draw-button:active {
+            /*box-shadow: 1px 1px 0px var(--color-text-main);*/
+            transform: translateX(-50%) translateY(4px);
+        }
+        .draw-button:disabled {
+            opacity: .75;
+            background: gray;
+            cursor: not-allowed;
+        }
     </style>
     <style>
         header-component {
@@ -115,20 +148,18 @@
 <body class="light">
 <header-component></header-component>
 <menu-component>
-    <button id="draw-polygon">ポリゴン</button>
-    <!--    <introduction-component></introduction-component>-->
+    <post-list-component></post-list-component>
+    <comments-form></comments-form>
 </menu-component>
 
 <div class="body-container">
     <div class="noise"></div>
+    <button id="draw-polygon" class="retro-button draw-button">投稿を作成する</button>
     <div id="map"></div>
     <post-form id="infoModal" ></post-form>
 </div>
 
-<!--<drawer-component id="drawer">-->
-<!--    <post-form id="infoModal" style="display: none;"></post-form>-->
-<!--    <comments-form id="commentModal" style="display: none;"></comments-form>-->
-<!--</drawer-component>-->
+
 <script src="./main.js" type="module"></script>
 
 </body>

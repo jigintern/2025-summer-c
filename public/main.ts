@@ -8,3 +8,4 @@ import './components/menu-component.ts'
 import './components/menu-post-card.ts'
 import './components/introduction-component.ts'
 import './components/header-component.ts'
+import './components/post-list-component.ts';

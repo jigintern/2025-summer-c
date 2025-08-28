@@ -8,11 +8,14 @@
 import {initMap} from "./map-initializer.ts";
 import {MapDataInfo} from "../types/map.ts";
 import {LeafletGlobal, LeafletLayer, LeafletMap} from "../types/leaflet.ts";
-import {postJson, queryJson, postComment, getComments} from "../utils/api.ts";
+import {postJson, queryJson} from "../utils/api.ts";
 import {PostSubmission} from "../types/postData.ts";
 
 // Leaflet.jsから提供されるグローバルなLオブジェクト。
 declare const L: LeafletGlobal;
+const drawPolygonButton = document.getElementById(
+    'draw-polygon',
+) as HTMLButtonElement;
 
 
 // ================== DOM要素取得 ==================
@@ -23,12 +26,6 @@ const postForm = document.getElementById('infoModal') as HTMLElement & {
 	open: () => void;
 	close: () => void;
 };
-/** ドロワー */
-// const drawerComponent = document.getElementById("drawer") as HTMLElement & {
-//     open: () => void;
-//     close: () => void;
-//     toggle: () => void;
-// }
 
 // ================== 関数定義 ==================
 
@@ -37,27 +34,30 @@ const postForm = document.getElementById('infoModal') as HTMLElement & {
  */
 async function loadAndRenderData(): Promise<void> {
     try {
-        // クエリの範囲を全世界に広げて、すべてのデータを取得するようにします
         const posts = await queryJson({ year: -1, x: -180, y: -90, x2: 180, y2: 90 });
         map.markerLayer.clearLayers();
         posts.forEach(post => {
             const layer = map.addInfoBox(post);
-            // 領域クリック時のイベントリスナーを追加
-            layer.on('click', (e) => {
-                getComments(post["id"]); //テスト用にGETリクエスト
+            layer.on('click', () => {
+                const event = new CustomEvent('show-comments', {
+                    detail: { post },
+                    bubbles: true,
+                    composed: true
+                });
+                window.dispatchEvent(event);
             });
         });
     } catch (error) {
         console.error("Failed to load initial data:", error);
     }
 }
+
 /**
  * ユーザーからの情報入力を求めるモーダルウィンドウを表示します。
  * @returns {Promise<MapDataInfo | null>} ユーザーが情報を入力して決定した場合はその情報を、キャンセルした場合はnullを解決するPromise。
  */
 function showInfoModal(): Promise<MapDataInfo | null> {
-	/** ユーザーに領域描画を促す説明の要素 */
-	
+	drawPolygonButton.disabled = true;
 	postForm.clear();
     postForm.open();
 
@@ -74,11 +74,10 @@ function showInfoModal(): Promise<MapDataInfo | null> {
         };
 
 		const cleanup = () => {
-			// introduction.style.display = "block";
 			postForm.removeEventListener('submit', onSubmit);
 			postForm.removeEventListener('cancel', onCancel);
-			// drawerComponent.close();
             postForm.close();
+            drawPolygonButton.disabled = false;
 		};
 
 		postForm.addEventListener('submit', onSubmit, { once: true });
@@ -93,44 +92,35 @@ function showInfoModal(): Promise<MapDataInfo | null> {
  */
 async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
     const bounds = layer.getBounds();
-    // 描画された領域が左上に表示されるようにマップを調整
-    const zoom = map.getBoundsZoom(bounds, false); // パディングなしでズームレベルを取得
-    const nw = bounds.getNorthWest(); // 領域の北西（左上）の角を取得
+    const zoom = map.getBoundsZoom(bounds, false);
+    const nw = bounds.getNorthWest();
 
-	// 領域の左上の角をマップビューの左上に合わせるための中心点を計算
 	const nwPixel = map.project(nw, zoom);
 	const mapSize = map.getSize();
-	const padding = L.point(40, 40); // 左と上に40pxのパディング
+	const padding = L.point(40, 40);
 	const centerPixel = nwPixel.subtract(padding).add(mapSize.divideBy(2));
 	const newCenter = map.unproject(centerPixel, zoom);
 
-    // 新しい中心とズームレベルを一度に設定
     map.setView(newCenter, zoom, { animate: true });
 
-	// drawerComponent.open()
 	const info = await showInfoModal();
-	
 
     if (info && 'era' in info) {
         const eraParts = (info.era as string).split('-');
-        if (eraParts.length !== 2) {
-            alert(
-                "時代の入力形式が正しくありません。例: '1980-1990' のように入力してください。",
-            );
+        if (eraParts.length !== 1 && eraParts.length !== 2) {
+            alert("時代の入力形式が正しくありません。");
             return false;
         }
 
         const gt = parseInt(eraParts[0], 10);
-        const lte = parseInt(eraParts[1], 10);
+        const lte = eraParts.length === 2 ? parseInt(eraParts[1], 10) : gt;
 
         if (Number.isNaN(gt) || Number.isNaN(lte)) {
-            alert(
-                "時代の入力形式が正しくありません。例: '1980-1990' のように入力してください。",
-            );
+            alert("時代の入力形式が正しくありません。");
             return false;
         }
 
-        const submission: PostSubmission = {
+        const submission: Omit<PostSubmission, 'id'> = {
             name: info.posterName,
             geometry: layer.toGeoJSON(),
             decade: { gt, lte },
@@ -143,11 +133,15 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
         try {
             const response = await postJson(submission);
             if (response.ok) {
-                const postLayer = map.addInfoBox(submission);
-                // 領域クリック時のイベントリスナーを追加
-                const respJson = await response.json();
-                postLayer.on('click', (e) => {
-                    getComments(respJson["id"]); //テスト用にGETリクエスト
+                const newPost: PostSubmission = await response.json();
+                const postLayer = map.addInfoBox(newPost);
+                postLayer.on('click', () => {
+                    const event = new CustomEvent('show-comments', {
+                        detail: { post: newPost },
+                        bubbles: true,
+                        composed: true
+                    });
+                    window.dispatchEvent(event);
                 });
                 return true;
             } else {
@@ -168,23 +162,25 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
 /** Leafletマップのインスタンス。 */
 export const map: LeafletMap = initMap('map', handleShapeCreated);
 
-// マップの移動範囲を全世界に制限
-const worldBounds = L.latLngBounds(
-    L.latLng(-90, -180), // 南西の角
-    L.latLng(90, 180), // 北東の角
-);
+const worldBounds = L.latLngBounds(L.latLng(-90, -180), L.latLng(90, 180));
 map.setMaxBounds(worldBounds);
 
 map.setView([35.943, 136.188], 15);
 
-// 初期データを一度だけ、全範囲で読み込む
+map.on('moveend', () => {
+    const bounds = map.getBounds();
+    const event = new CustomEvent('map-bounds-changed', {
+        detail: { bounds: {
+            north: bounds.getNorth(),
+            south: bounds.getSouth(),
+            east: bounds.getEast(),
+            west: bounds.getWest()
+        } }
+    });
+    window.dispatchEvent(event);
+});
+
 loadAndRenderData();
 
-// ================== カスタム描画コントロール ==================
-const drawPolygonButton = document.getElementById(
-    'draw-polygon',
-) as HTMLButtonElement;
-
 const polygonDrawer = new L.Draw.Polygon(map);
-
 drawPolygonButton.addEventListener('click', () => polygonDrawer.enable());
