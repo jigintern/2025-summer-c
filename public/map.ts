@@ -18,21 +18,10 @@ declare const L: LeafletGlobal;
 
 /** ユーザーインターフェースのモーダルウィンドウ要素。 */
 const modal = document.getElementById('infoModal') as HTMLElement & {
-	clear: () => void;
-	appear: (top: number, left: number) => void;
-	close: () => void;
-};
-/** ドロワー */
-// const drawerComponent = document.getElementById("drawer") as HTMLElement & {
-//     open: () => void;
-//     close: () => void;
-//     toggle: () => void;
-// }
-const infoModal = document.getElementById("infoModal") as HTMLElement & { clear: () => void; };
-const commentModal = document.getElementById("commentModal") as HTMLElement & {
     clear: () => void;
-    setItemId: (s:string) => void;
-}
+    appear: (top: number, left: number) => void;
+    close: () => void;
+};
 /** ドロワー */
 // const drawerComponent = document.getElementById("drawer") as HTMLElement & {
 //     open: () => void;
@@ -61,124 +50,113 @@ async function loadAndRenderData(): Promise<void> {
         console.error("Failed to load initial data:", error);
     }
 }
-
 /**
  * ユーザーからの情報入力を求めるモーダルウィンドウを表示します。
- * @param {string | null} itemId - 既存のアイテムIDがある場合に指定します。コメントモード用。
  * @returns {Promise<MapDataInfo | null>} ユーザーが情報を入力して決定した場合はその情報を、キャンセルした場合はnullを解決するPromise。
  */
-function showInfoModal(itemId: string | null = null): Promise<MapDataInfo | null> {
-    let modal = infoModal;
-    // コメントモードの場合
-    if (itemId !== null) {
-        modal = commentModal;
-        modal.setItemId(itemId);
-    }
+function showInfoModal(): Promise<MapDataInfo | null> {
     /** ユーザーに領域描画を促す説明の要素 */
     const introduction = document.getElementById('introduction') as HTMLElement;
     // introduction.style.display = "none";
     modal.clear();
     // modal.style.display = "block";
 
-    modal.style.display = "block";
+    return new Promise((resolve) => {
+        const onSubmit = (e: Event) => {
+            const customEvent = e as CustomEvent;
+            cleanup();
+            resolve(customEvent.detail);
+        };
 
-	return new Promise((resolve) => {
-		const onSubmit = (e: Event) => {
-			const customEvent = e as CustomEvent;
-			cleanup();
-			resolve(customEvent.detail);
-		};
+        const onCancel = () => {
+            cleanup();
+            resolve(null);
+        };
 
-		const onCancel = () => {
-			cleanup();
-			resolve(null);
-		};
+        const cleanup = () => {
+            // introduction.style.display = "block";
+            modal.style.display = 'none';
+            modal.removeEventListener('submit', onSubmit);
+            modal.removeEventListener('cancel', onCancel);
+            // drawerComponent.close();
+        };
 
-		const cleanup = () => {
-			// introduction.style.display = "block";
-			modal.style.display = 'none';
-			modal.removeEventListener('submit', onSubmit);
-			modal.removeEventListener('cancel', onCancel);
-			// drawerComponent.close();
-		};
-
-		modal.addEventListener('submit', onSubmit, { once: true });
-		modal.addEventListener('cancel', onCancel, { once: true });
-	});
+        modal.addEventListener('submit', onSubmit, { once: true });
+        modal.addEventListener('cancel', onCancel, { once: true });
+    });
 }
 
 /**
  * ユーザーがマップ上に新しい図形を描画した際の処理を行います。
  * @param {LeafletLayer} layer - 描画された図形レイヤー。
- * @param {string | null} itemId - 既存のアイテムIDがある場合に指定します。コメントモード用。
  * @returns {Promise<boolean>} ユーザーが情報を入力し、データが正常に追加された場合はtrue、キャンセルされた場合はfalseを解決するPromise。
  */
-async function handleShapeCreated(layer: LeafletLayer | null = null, itemId: string | null = null): Promise<boolean> {
-	const bounds = layer.getBounds();
-	// 描画された領域が左上に表示されるようにマップを調整
-	const zoom = map.getBoundsZoom(bounds, false); // パディングなしでズームレベルを取得
-	const nw = bounds.getNorthWest(); // 領域の北西（左上）の角を取得
+async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
+    const bounds = layer.getBounds();
+    // 描画された領域が左上に表示されるようにマップを調整
+    const zoom = map.getBoundsZoom(bounds, false); // パディングなしでズームレベルを取得
+    const nw = bounds.getNorthWest(); // 領域の北西（左上）の角を取得
 
-	// 領域の左上の角をマップビューの左上に合わせるための中心点を計算
-	const nwPixel = map.project(nw, zoom);
-	const mapSize = map.getSize();
-	const centerPixel = nwPixel.add(mapSize.divideBy(2));
-	const newCenter = map.unproject(centerPixel, zoom);
+    // 領域の左上の角をマップビューの左上に合わせるための中心点を計算
+    const nwPixel = map.project(nw, zoom);
+    const mapSize = map.getSize();
+    const centerPixel = nwPixel.add(mapSize.divideBy(2));
+    const newCenter = map.unproject(centerPixel, zoom);
 
-	// 新しい中心とズームレベルを一度に設定
-	map.setView(newCenter, zoom, { animate: true });
+    // 新しい中心とズームレベルを一度に設定
+    map.setView(newCenter, zoom, { animate: true });
 
-	// drawerComponent.open()
-	modal.appear(newCenter.lat, newCenter.lng);
-	const info = await showInfoModal(itemId);
-	modal.close();
+    // drawerComponent.open()
+    modal.appear(newCenter.lat, newCenter.lng);
+    const info = await showInfoModal();
+    modal.close();
 
-	if (info && 'era' in info) {
-		const eraParts = (info.era as string).split('-');
-		if (eraParts.length !== 2) {
-			alert(
-				"時代の入力形式が正しくありません。例: '1980-1990' のように入力してください。",
-			);
-			return false;
-		}
+    if (info && 'era' in info) {
+        const eraParts = (info.era as string).split('-');
+        if (eraParts.length !== 2) {
+            alert(
+                "時代の入力形式が正しくありません。例: '1980-1990' のように入力してください。",
+            );
+            return false;
+        }
 
-		const gt = parseInt(eraParts[0], 10);
-		const lte = parseInt(eraParts[1], 10);
+        const gt = parseInt(eraParts[0], 10);
+        const lte = parseInt(eraParts[1], 10);
 
-		if (Number.isNaN(gt) || Number.isNaN(lte)) {
-			alert(
-				"時代の入力形式が正しくありません。例: '1980-1990' のように入力してください。",
-			);
-			return false;
-		}
+        if (Number.isNaN(gt) || Number.isNaN(lte)) {
+            alert(
+                "時代の入力形式が正しくありません。例: '1980-1990' のように入力してください。",
+            );
+            return false;
+        }
 
-		const submission: PostSubmission = {
-			name: info.posterName,
-			geometry: layer.toGeoJSON(),
-			decade: { gt, lte },
-			comment: info.bodyText,
-			photos: [],
-			thread: [],
-			created_at: new Date().toISOString(),
-		};
+        const submission: PostSubmission = {
+            name: info.posterName,
+            geometry: layer.toGeoJSON(),
+            decade: { gt, lte },
+            comment: info.bodyText,
+            photos: [],
+            thread: [],
+            created_at: new Date().toISOString(),
+        };
 
-		try {
-			const response = await postJson(submission);
-			if (response.ok) {
-				map.addInfoBox(submission);
-				return true;
-			} else {
-				console.error('Failed to save data', await response.text());
-				alert('データの保存に失敗しました。');
-				return false;
-			}
-		} catch (error) {
-			console.error('Error posting data', error);
-			alert('データの送信中にエラーが発生しました。');
-			return false;
-		}
-	}
-	return false;
+        try {
+            const response = await postJson(submission);
+            if (response.ok) {
+                map.addInfoBox(submission);
+                return true;
+            } else {
+                console.error('Failed to save data', await response.text());
+                alert('データの保存に失敗しました。');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error posting data', error);
+            alert('データの送信中にエラーが発生しました。');
+            return false;
+        }
+    }
+    return false;
 }
 
 // ================== 初期化処理 ==================
@@ -187,8 +165,8 @@ export const map: LeafletMap = initMap('map', handleShapeCreated);
 
 // マップの移動範囲を全世界に制限
 const worldBounds = L.latLngBounds(
-	L.latLng(-90, -180), // 南西の角
-	L.latLng(90, 180), // 北東の角
+    L.latLng(-90, -180), // 南西の角
+    L.latLng(90, 180), // 北東の角
 );
 map.setMaxBounds(worldBounds);
 
@@ -199,7 +177,7 @@ loadAndRenderData();
 
 // ================== カスタム描画コントロール ==================
 const drawPolygonButton = document.getElementById(
-	'draw-polygon',
+    'draw-polygon',
 ) as HTMLButtonElement;
 
 const polygonDrawer = new L.Draw.Polygon(map);
