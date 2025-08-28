@@ -225,25 +225,32 @@ class PostForm extends HTMLElement {
 		const posterName =
 			(this.shadowRoot.getElementById('posterName') as HTMLInputElement)
 				.value;
-		const eraGt =
-			(this.shadowRoot.getElementById('era-gt') as HTMLInputElement)
-				.value;
-		const eraLte =
-			(this.shadowRoot.getElementById('era-lte') as HTMLInputElement)
-				.value;
-
-		// Validate that both eraGt and eraLte are non-empty and numeric
-		if (
-			!eraLte || isNaN(Number(eraLte))
-		) {
-			alert('終了年を正しく入力してください。');
-			return;
-		}
-        if (eraGt && isNaN(Number(eraGt))) {
-            alert('開始年を正しく入力してください。');
-			return;
+            const eraGt = (this.shadowRoot.getElementById('era-gt') as HTMLInputElement).value;
+            const eraLte = (this.shadowRoot.getElementById('era-lte') as HTMLInputElement).value;
+        
+        // Validate that both eraGt and eraLte are non-empty and numeric
+        if (
+            !eraGt || !eraLte ||
+            isNaN(Number(eraGt)) || isNaN(Number(eraLte))
+        ) {
+            alert('時代の範囲（開始年と終了年）を正しく入力してください。');
+            return;
         }
-		const era = `${eraGt}-${eraLte}`;
+
+        // 年代の範囲チェック（1900〜2100）
+        if (Number(eraGt) < 1900 || Number(eraGt) > 2100 ||
+            Number(eraLte) < 1900 || Number(eraLte) > 2100) {
+            alert('年代は1900年から2100年の間で入力してください。');
+            return;
+        }
+
+        // 順序チェック（開始年が終了年より後にならないようにする）
+        if (Number(eraGt) > Number(eraLte)) {
+            alert('開始年は終了年より前の年を入力してください。');
+            return;
+        }
+
+        const era = `${eraGt}-${eraLte}`;
 		const bodyText =
 			(this.shadowRoot.getElementById('bodyText') as HTMLTextAreaElement)
 				.value;

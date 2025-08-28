@@ -19,16 +19,23 @@ export async function find(kv: Deno.Kv, year: number, x: number, y: number, x2: 
         if(year !== -1 && (data["decade"]["gt"] > year || data["decade"]["lte"] < year)){
             continue;
         }
-        con.forEach((co: any) => {
-            co.forEach((c: any) => {
+        let ok:boolean = false;
+        for (let i = 0; i < con.length; i++) {
+            const co = con[i];
+            for (let j = 0; j < co.length; j++) {
+                const c = co[j];
                 const dataX = c[0];
                 const dataY = c[1];
                 if(x <= dataX && dataX <= x2 && y <= dataY && dataY <= y2){
                     ans.push(data);
-                    return;
+                    ok = true;
+                    break;
                 }
-            });
-        });
+            }
+            if(ok){
+                break;
+            }
+        }
     }
     return ans;
 }

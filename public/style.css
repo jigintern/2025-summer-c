@@ -39,6 +39,15 @@
     border: 1px solid #777;
     z-index: 500;
     position: relative;
+
+
+}
+
+/* 非表示にするためのクラス */
+.info-hidden {
+    display: none;
+    /* opacity: 0; */ /* display: noneの代わり。アニメーションさせたい場合はこちら */
+    /* pointer-events: none; */ /* opacityとセットで使う */
 }
 
 .hide-tooltips .leaflet-tooltip.info-tooltip {
