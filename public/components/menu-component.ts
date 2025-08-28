@@ -28,9 +28,6 @@ class MenuComponent extends HTMLElement {
             /*filter: contrast(170%) brightness(1000%);*/
           background-color: var(--background-color);
           background-image: url(../sand-noise.svg);
-          
-          
-          
           z-index: 1000;
         }
        

@@ -18,7 +18,9 @@ export interface LeafletLayerGroup extends LeafletLayer {
 }
 
 // L.Rectangleの最小限の定義
-export interface LeafletRectangle extends LeafletLayer {}
+export interface LeafletRectangle extends LeafletLayer {
+    on(click: string, param2: () => void): void;
+}
 
 /** L.Mapの最小限の定義 */
 export interface LeafletMap {
@@ -108,4 +110,6 @@ export interface LeafletGlobal {
     };
     Draw: LeafletDraw;
     geoJSON(geojson?: GeoJSON, options?: object): LeafletLayerGroup;
+
+    point(number: number, number2: number): any;
 }
