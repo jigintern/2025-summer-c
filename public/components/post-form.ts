@@ -35,7 +35,7 @@ const content: string = `
         <p>投稿者<input type="text" id="posterName"></p>
         <div class="period">
             <p>期間</p>
-            <p><span class="period-start">( <input type="number" id="era-gt" minlength="4" maxlength="4"> 年から)</span> <input type="number" id="era-lte" minlength="4" maxlength="4"> 年まで(必須)</p>
+            <p><span class="period-start">( <input type="number" id="era-gt" min="1900" max="2100"> 年から)</span> <input type="number" id="era-lte" min="1900" max="2100"> 年まで(必須)</p>
         </div>
     </div>
     <button id="submitInfo">Submit</button>
@@ -86,6 +86,20 @@ class PostForm extends HTMLElement {
             alert('時代の範囲（開始年と終了年）を正しく入力してください。');
             return;
         }
+
+        // 年代の範囲チェック（1900〜2100）
+        if (Number(eraGt) < 1900 || Number(eraGt) > 2100 ||
+            Number(eraLte) < 1900 || Number(eraLte) > 2100) {
+            alert('年代は1900年から2100年の間で入力してください。');
+            return;
+        }
+
+        // 順序チェック（開始年が終了年より後にならないようにする）
+        if (Number(eraGt) > Number(eraLte)) {
+            alert('開始年は終了年より前の年を入力してください。');
+            return;
+        }
+
         const era = `${eraGt}-${eraLte}`;
 		const bodyText =
 			(this.shadowRoot.getElementById('bodyText') as HTMLTextAreaElement)
