@@ -13,6 +13,11 @@ const sliderContent = `
     .slider-label { margin-bottom: 20px; }
     .selected-range { font-weight: bold; }
     :host .noUi-connect { background: var(--accent-color, #007bff); }
+       .slider-label {
+        font-size: 1rem;
+        margin-bottom: 20px;
+        color: var(--text-color, #333);
+    }
     :host .noUi-handle { 
         width: 30px;
         
@@ -22,6 +27,36 @@ const sliderContent = `
         box-shadow: none;
         top: -6px;
         right: -11px;
+ }
+   .selected-range {
+        font-weight: bold;
+    }
+    
+    .selected-range {
+        font-weight: bold;
+    }
+    
+    
+    :host .noUi-handle::before,
+    :host .noUi-handle::after {
+        content: "";
+        display: block;
+        position: absolute;
+        height: 12px; /* マークの高さ */
+        width: 1px;  /* マークの太さ */
+        background: rgb(007bff) /* マークの色 */
+        top: 8px;    /* 上からの位置 */
+    }
+
+    /* 1本目の線の左からの位置 */
+    :host .noUi-handle::before {
+        left: 11px;
+    }
+
+    /* 2本目の線の左からの位置 */
+    :host .noUi-handle::after {
+        left: 15px;
+    }
   </style>
   <div class="slider-container">
     <div class="slider-label">年代: <span class="selected-range"></span></div>
