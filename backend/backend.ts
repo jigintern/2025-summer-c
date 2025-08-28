@@ -8,7 +8,7 @@ export async function query(kv: Deno.Kv, req: Request) {
 
     // dataAdd(kv);
     // dataDel(kv);
-    // dataView(kv);
+    dataView(kv);
 
     const pathname = new URL(req.url).pathname;
 
@@ -17,21 +17,6 @@ export async function query(kv: Deno.Kv, req: Request) {
         const body : ItemData = bod as ItemData;
         const id = ulid();
         kv.set(["items",id], body);
-        let yearesr = 1;
-        let yearesl = 0;
-        try{
-            yearesl = body["decade"]["gt"];
-            yearesr = body["decade"]["lte"]+1 ?? yearesl+51;
-        }catch (e) {}
-        // console.log(yearesl, yearesr)
-        for (let i = yearesl; i < yearesr; i++) {
-            const id2 = ulid();
-            kv.set(["itemsDecades",i,id2], id);
-        }
-        if(yearesr <= yearesl){
-            const id2 = ulid();
-            kv.set(["itemsDecades",yearesr-1,id2], id);
-        }
         return Response.json(body);
     }
 
