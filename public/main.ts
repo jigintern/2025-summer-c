@@ -3,3 +3,7 @@ import './map.ts';
 import './components/drawer-component.ts';
 import './components/post-form.ts';
 import '../utils/api.ts'
+import './components/menu-component.ts'
+import './components/menu-post-card.ts'
+import './components/introduction-component.ts'
+import './components/header-component.ts'
