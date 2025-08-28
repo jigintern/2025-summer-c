@@ -11,23 +11,19 @@ import { LeafletMap, LeafletLayer, LeafletGlobal } from "../types/leaflet.ts";
 import { postJson, queryJson } from "../utils/api.ts";
 import { PostSubmission } from "../types/postData.ts";
 
+export  let allPosts: PostSubmission[] = []; // ★ 1. すべての投稿データをここに保持します
+
 // Leaflet.jsから提供されるグローバルなLオブジェクト。
 declare const L: LeafletGlobal;
 
 // ================== DOM要素取得 ==================
 
 /** ユーザーインターフェースのモーダルウィンドウ要素。 */
-const modal = document.getElementById("infoModal") as HTMLElement & { 
+const modal = document.getElementById("infoModal") as HTMLElement & {
     clear: () => void;
     appear: (top: number, left: number) => void;
     close: () => void;
 };
-/** ドロワー */
-// const drawerComponent = document.getElementById("drawer") as HTMLElement & {
-//     open: () => void;
-//     close: () => void;
-//     toggle: () => void;
-// }
 
 // ================== 関数定義 ==================
 
@@ -38,6 +34,9 @@ async function loadAndRenderData(): Promise<void> {
     try {
         // クエリの範囲を全世界に広げて、すべてのデータを取得するようにします
         const posts = await queryJson({ year: -1, x: -180, y: -90, x2: 180, y2: 90 });
+
+        allPosts = posts; // ★ 2. 取得したデータを変数に保存
+
         map.markerLayer.clearLayers();
         posts.forEach(post => {
             map.addInfoBox(post);
@@ -52,13 +51,9 @@ async function loadAndRenderData(): Promise<void> {
  * @returns {Promise<MapDataInfo | null>} ユーザーが情報を入力して決定した場合はその情報を、キャンセルした場合はnullを解決するPromise。
  */
 function showInfoModal(): Promise<MapDataInfo | null> {
-    /** ユーザーに領域描画を促す説明の要素 */
     const introduction = document.getElementById("introduction") as HTMLElement;
-    // introduction.style.display = "none";
     modal.clear();
-    // modal.style.display = "block";
-    
-    
+
     return new Promise((resolve) => {
         const onSubmit = (e: Event) => {
             const customEvent = e as CustomEvent;
@@ -72,11 +67,9 @@ function showInfoModal(): Promise<MapDataInfo | null> {
         };
 
         const cleanup = () => {
-            // introduction.style.display = "block";
             modal.style.display = "none";
             modal.removeEventListener("submit", onSubmit);
             modal.removeEventListener("cancel", onCancel);
-            // drawerComponent.close();
         };
 
         modal.addEventListener("submit", onSubmit, { once: true });
@@ -91,24 +84,20 @@ function showInfoModal(): Promise<MapDataInfo | null> {
  */
 async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
     const bounds = layer.getBounds();
-    // 描画された領域が左上に表示されるようにマップを調整
-    const zoom = map.getBoundsZoom(bounds, false); // パディングなしでズームレベルを取得
-    const nw = bounds.getNorthWest(); // 領域の北西（左上）の角を取得
-    
-    // 領域の左上の角をマップビューの左上に合わせるための中心点を計算
+    const zoom = map.getBoundsZoom(bounds, false);
+    const nw = bounds.getNorthWest();
+
     const nwPixel = map.project(nw, zoom);
     const mapSize = map.getSize();
     const centerPixel = nwPixel.add(mapSize.divideBy(2));
     const newCenter = map.unproject(centerPixel, zoom);
-    
-    // 新しい中心とズームレベルを一度に設定
+
     map.setView(newCenter, zoom, { animate: true });
-    
-    // drawerComponent.open()
+
     modal.appear(newCenter.lat, newCenter.lng)
     const info = await showInfoModal();
     modal.close()
-    
+
     if (info && 'era' in info) {
         const eraParts = (info.era as string).split('-');
         if (eraParts.length !== 2) {
@@ -138,6 +127,7 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
             const response = await postJson(submission);
             if (response.ok) {
                 map.addInfoBox(submission);
+                allPosts.push(submission); // ★ 新しく追加したデータもallPostsに追加
                 return true;
             } else {
                 console.error("Failed to save data", await response.text());
@@ -152,6 +142,30 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
     }
     return false;
 }
+
+/**
+ * ★ 3. 指定された年代の範囲に基づいて地図上のマーカーをフィルタリングします。
+ * @param {number} startYear - フィルタリング範囲の開始年。
+ * @param {number} endYear - フィルタリング範囲の終了年。
+ */
+export function filterMapByDecade(startYear: number, endYear: number): void {
+    if (!allPosts) return;
+
+    map.markerLayer.clearLayers();
+
+    const filteredPosts = allPosts.filter(post => {
+        const postStart = post.decade.gt;
+        const postEnd = post.decade.lte;
+        return postEnd >= startYear && postStart <= endYear;
+    });
+
+    filteredPosts.forEach(post => {
+        map.addInfoBox(post);
+    });
+
+    console.log(`Filtered to ${filteredPosts.length} posts between ${startYear} and ${endYear}.`);
+}
+
 
 // ================== 初期化処理 ==================
 /** Leafletマップのインスタンス。 */
@@ -173,7 +187,6 @@ loadAndRenderData();
 const drawRectangleButton = document.getElementById('draw-rectangle') as HTMLButtonElement;
 const drawPolygonButton = document.getElementById('draw-polygon') as HTMLButtonElement;
 const drawCircleButton = document.getElementById('draw-circle') as HTMLButtonElement;
-
 
 const rectangleDrawer = new L.Draw.Rectangle(map);
 const polygonDrawer = new L.Draw.Polygon(map);
