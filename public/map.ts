@@ -38,7 +38,24 @@ async function loadAndRenderData(): Promise<void> {
         const posts = await queryJson({ year: -1, x: -180, y: -90, x2: 180, y2: 90 });
         map.markerLayer.clearLayers();
         posts.forEach(post => {
-            map.addInfoBox(post);
+            const layer = map.addInfoBox(post);
+
+            // 領域クリック時のイベントリスナーを追加
+            layer.on('click', (e) => {
+                // クリックイベントの伝播を停止（マップのクリックイベントを発火させない）
+                L.DomEvent.stopPropagation(e);
+
+                // カスタムイベントを発火させる
+                const customEvent = new CustomEvent('area-clicked', {
+                    bubbles: true,
+                    composed: true,
+                    detail: { post, layer, event: e }
+                });
+                document.dispatchEvent(customEvent);
+
+                // あるいは直接処理を実行することもできます
+                handleAreaClick(post, layer, e);
+            });
         });
     } catch (error) {
         console.error("Failed to load initial data:", error);
@@ -46,11 +63,34 @@ async function loadAndRenderData(): Promise<void> {
 }
 
 /**
+ * 領域がクリックされたときの処理
+ * @param post 領域に関連するデータ
+ * @param layer クリックされたレイヤー
+ * @param event クリックイベント
+ */
+async function handleAreaClick(post: PostSubmission, layer: LeafletLayer, event: LeafletEvent): void {
+    console.log('領域がクリックされました:', post);
+
+    // 例：ドロワーを開いて詳細情報を表示
+    drawerComponent.open();
+    const info = await showInfoModal();
+
+
+    // 例：詳細情報を表示するためのモーダルウィンドウを表示
+    // showInfoModal(post.id).then(info => {
+    //     if (info) {
+    //         // 何か処理...
+    //     }
+    // });
+}
+
+
+/**
  * ユーザーからの情報入力を求めるモーダルウィンドウを表示します。
  * @param {string | null} itemId - 既存のアイテムIDがある場合に指定します。コメントモード用。
  * @returns {Promise<MapDataInfo | null>} ユーザーが情報を入力して決定した場合はその情報を、キャンセルした場合はnullを解決するPromise。
  */
-function showInfoModal(itemId: string | null = "01K3Q4JF0PXVYCCS9M0S1Y69DS"): Promise<MapDataInfo | null> {
+function showInfoModal(itemId: string | null = null): Promise<MapDataInfo | null> {
     let modal = infoModal;
     modal.clear();
     // コメントモードの場合

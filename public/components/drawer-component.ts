@@ -17,7 +17,7 @@ class DrawerComponent extends HTMLElement {
         :host {
           /* 親要素に対して配置の基準となるように設定 */
           position: relative;
-          display: block;
+          display: block;map-bounds-display
         }
 
         .drawer {
