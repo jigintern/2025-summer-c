@@ -1,41 +1,28 @@
 // slider-component.ts
 
-// noUiSliderライブラリの型定義（TypeScriptで利用する場合）
 // @ts-ignore
 import noUiSlider from 'https://cdn.jsdelivr.net/npm/nouislider/+esm';
+// ★ 1. 必要なものをインポート
+import { map, allPosts } from '../map.ts';
+import { filterMapByDecade } from './filter.ts';
 
 const sliderContent = `
   <style>
-    /* noUiSliderの基本的なスタイルをShadow DOM内に直接読み込む */
     @import url('https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.1/nouislider.min.css');
-
-    :host {
-      display: block;
-      padding: 30px 20px;
-    }
-
-    .slider-label {
-      font-size: 1rem;
-      margin-bottom: 20px;
-      color: var(--text-color, #333);
-    }
-    
-    .selected-range {
-        font-weight: bold;
-    }
-
-    /* スライダーのつまみの色などをカスタマイズ */
-    :host .noUi-connect {
-        background: var(--accent-color, #007bff);
-    }
-
-    :host .noUi-handle {
-        border-radius: 50%;
+    :host { display: block; padding: 30px 20px; }
+    .slider-label { margin-bottom: 20px; }
+    .selected-range { font-weight: bold; }
+    :host .noUi-connect { background: var(--accent-color, #007bff); }
+    :host .noUi-handle { 
+        width: 30px;
+        
+        height: 30px;
+        border-radius: 50%; /* これが円形にしています */
         border-color: var(--accent-color, #007bff);
         box-shadow: none;
-    }
+        top: -6px;
+        right: -11px;
   </style>
-
   <div class="slider-container">
     <div class="slider-label">年代: <span class="selected-range"></span></div>
     <div id="year-slider"></div>
@@ -60,45 +47,43 @@ class SliderComponent extends HTMLElement {
 
         if (sliderElement) {
             this.slider = noUiSlider.create(sliderElement, {
-                start: [1980, 2010],
+                start: [1900, 2100],
                 connect: true,
-                range: {
-                    'min': 1950,
-                    'max': 2030
-                },
+                range: { 'min': 1900, 'max': 2100 },
                 step: 10,
-                margin: 10, // つまみ同士の最小間隔
-                tooltips: true, // つまみの上に値を表示
+                margin: 10,
+                tooltips: false,
                 format: {
                     to: (value) => Math.round(value) + '年',
                     from: (value) => Number(value.replace('年', ''))
                 }
             });
 
-            // スライダーの値が変更されたときのイベント
             this.slider.on('update', (values, handle) => {
                 if (this.rangeDisplay) {
-                    // "1980年 - 2010年" のように表示を更新
                     this.rangeDisplay.textContent = `${values[0]} - ${values[1]}`;
                 }
             });
 
-            // マウス操作が終わったときにカスタムイベントを発火
+            // ★ 2. 'change'イベントの処理を変更
+            // マウス操作が終わったら、イベントを発火する代わりに直接フィルター関数を呼び出す
             this.slider.on('change', (values, handle) => {
                 const numericValues = values.map(v => Number(String(v).replace('年', '')));
-                this.dispatchEvent(new CustomEvent('rangeChange', {
-                    detail: {
-                        range: numericValues
-                    },
-                    bubbles: true,
-                    composed: true
-                }));
+                const [startYear, endYear] = numericValues;
+
+                // インポートした関数を直接呼び出す
+                filterMapByDecade(map, allPosts, startYear, endYear);
+
+                // (任意) ページ上のテキストも更新
+                const resultDisplay = document.querySelector<HTMLSpanElement>('#result');
+                if (resultDisplay) {
+                    resultDisplay.textContent = `${startYear}年 〜 ${endYear}年`;
+                }
             });
         }
     }
 
     disconnectedCallback() {
-        // コンポーネントがDOMから削除されたらスライダーを破棄
         if (this.slider) {
             this.slider.destroy();
         }
