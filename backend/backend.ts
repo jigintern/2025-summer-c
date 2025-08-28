@@ -8,7 +8,7 @@ export async function query(kv: Deno.Kv, req: Request) {
 
     // dataAdd(kv);
     // dataDel(kv);
-    dataView(kv);
+    // dataView(kv);
 
     const pathname = new URL(req.url).pathname;
 

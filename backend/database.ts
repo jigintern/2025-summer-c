@@ -16,7 +16,6 @@ export async function find(kv: Deno.Kv, year: number, x: number, y: number, x2: 
     for await (const data of datas){
         const con = data["geometry"]["geometry"]["coordinates"];
         if(year !== -1 && (data["decade"]["gt"] > year || data["decade"]["lte"] < year)){
-            console.log("continue")
             continue;
         }
         con.forEach((co: any) => {
