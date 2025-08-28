@@ -22,7 +22,8 @@ export async function findByDecade(kv: Deno.Kv, gte: number, lt: number){
 }
 
 export async function findById(kv: Deno.Kv, id: string){
-    return await kv.get(["items", id]);
+    const data = await kv.get(["items", id]);
+    return data["value"];
 }
 
 export async function find(kv: Deno.Kv, year: number, x: number, y: number, x2: number, y2: number){
@@ -30,7 +31,7 @@ export async function find(kv: Deno.Kv, year: number, x: number, y: number, x2: 
     let ans : any[]  = []
     for await (const i of retID){
         const dat = await findById(kv, i.value);
-        const data : ItemData = dat["value"] as ItemData;
+        const data : ItemData = dat as ItemData;
         const con = data["geometry"]["geometry"]["coordinates"];
         con.forEach((co: any) => {
             co.forEach((c: any) => {

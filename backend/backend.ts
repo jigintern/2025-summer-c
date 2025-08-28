@@ -1,5 +1,5 @@
 import { ulid } from "https://deno.land/x/ulid@v0.3.0/mod.ts";
-import {find} from "./database.ts";
+import {find,findById} from "./database.ts";
 import {serveDir} from 'jsr:@std/http/file-server';
 import {dataAdd, dataDel, dataView} from "./tester.ts";
 import {ItemData} from "../types/schema.ts";
@@ -55,6 +55,32 @@ export async function query(kv: Deno.Kv, req: Request) {
         const ret = await find(kv, year, parseFloat(x),parseFloat(y),parseFloat(x2),parseFloat(y2));
         return Response.json(ret);
     }
+
+    if(req.method === 'GET' && pathname === '/get-comments'){
+        const res = new URL(req.url).searchParams;
+        const id = res.get("id") ?? "0";
+        // console.log(id);
+        const ret = await findById(kv,id);
+        // console.log(ret["thread"]);
+        return Response.json(ret["thread"]);
+    }
+
+    if (req.method === 'POST' && pathname === '/post-comments') {
+        const body = await req.json();
+        const id = body["id"];
+        const com_id = ulid();
+        const com = body["comment"];
+        const created_at = body["created_at"];
+        const ret = await findById(kv,id);
+        ret["thread"].push({
+            "id": com_id,
+            "comment": com,
+            "created_at": created_at
+        });
+        kv.set(["items",id], ret);
+        return Response.json(ret);
+    }
+
 
     // const ret = await find(kv,-1,0,0,1000,1000);
     // console.log(ret);
