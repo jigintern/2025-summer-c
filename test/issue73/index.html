@@ -1,0 +1,213 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>コメントAPI テストUI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .panel {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        input, textarea, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #commentsList {
+            margin-top: 20px;
+        }
+        .comment {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .comment-meta {
+            color: #666;
+            font-size: 0.8em;
+            margin-top: 5px;
+        }
+        .error {
+            color: red;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+<h1>コメントAPI テストUI</h1>
+
+<div class="container">
+    <div class="panel">
+        <h2>コメント投稿</h2>
+        <div id="errorMsg" class="error"></div>
+        <input type="text" id="itemId" placeholder="アイテムID" required>
+        <textarea id="commentText" placeholder="コメント内容" required></textarea>
+        <button id="postComment">コメントを投稿</button>
+    </div>
+
+    <div class="panel">
+        <h2>コメント表示</h2>
+        <input type="text" id="getItemId" placeholder="アイテムID" required>
+        <button id="getComments">コメントを取得</button>
+        <div id="commentsList"></div>
+    </div>
+</div>
+
+<script>
+    // 現在の日時をISO形式で取得する関数
+    function getCurrentTimestamp() {
+        return new Date().toISOString();
+    }
+
+    // コメントを投稿する
+    document.getElementById('postComment').addEventListener('click', async () => {
+        const itemId = document.getElementById('itemId').value.trim();
+        const commentText = document.getElementById('commentText').value.trim();
+        const errorMsg = document.getElementById('errorMsg');
+
+        errorMsg.textContent = '';
+
+        if (!itemId) {
+            errorMsg.textContent = 'アイテムIDを入力してください';
+            return;
+        }
+
+        if (!commentText) {
+            errorMsg.textContent = 'コメント内容を入力してください';
+            return;
+        }
+
+        try {
+            const response = await fetch('/post-comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    id: itemId,
+                    comment: commentText,
+                    created_at: getCurrentTimestamp()
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`エラー: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('投稿成功:', data);
+
+            // フォームをクリア
+            document.getElementById('commentText').value = '';
+
+            // 成功メッセージ
+            errorMsg.textContent = 'コメントが正常に投稿されました';
+            errorMsg.style.color = 'green';
+
+            // 自動的にコメントを取得して表示
+            document.getElementById('getItemId').value = itemId;
+            fetchComments(itemId);
+
+        } catch (error) {
+            console.error('投稿エラー:', error);
+            errorMsg.textContent = `エラー: ${error.message}`;
+        }
+    });
+
+    // コメントを取得する
+    document.getElementById('getComments').addEventListener('click', () => {
+        const itemId = document.getElementById('getItemId').value.trim();
+
+        if (!itemId) {
+            alert('アイテムIDを入力してください');
+            return;
+        }
+
+        fetchComments(itemId);
+    });
+
+    // コメントを取得して表示する関数
+    async function fetchComments(itemId) {
+        const commentsListEl = document.getElementById('commentsList');
+        commentsListEl.innerHTML = '<p>読み込み中...</p>';
+
+        try {
+            const response = await fetch(`/get-comments?id=${encodeURIComponent(itemId)}`);
+
+            if (!response.ok) {
+                throw new Error(`エラー: ${response.status}`);
+            }
+
+            const comments = await response.json();
+
+            if (!comments || comments.length === 0) {
+                commentsListEl.innerHTML = '<p>コメントはありません</p>';
+                return;
+            }
+
+            // コメントを表示
+            commentsListEl.innerHTML = '';
+            comments.forEach(comment => {
+                const date = new Date(comment.created_at);
+                const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+
+                const commentEl = document.createElement('div');
+                commentEl.className = 'comment';
+                commentEl.innerHTML = `
+                        <div>${escapeHTML(comment.comment)}</div>
+                        <div class="comment-meta">
+                            ID: ${escapeHTML(comment.id)} |
+                            投稿日時: ${formattedDate}
+                        </div>
+                    `;
+                commentsListEl.appendChild(commentEl);
+            });
+
+        } catch (error) {
+            console.error('取得エラー:', error);
+            commentsListEl.innerHTML = `<p>エラー: ${error.message}</p>`;
+        }
+    }
+
+    // HTML特殊文字をエスケープする関数
+    function escapeHTML(str) {
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+</script>
+</body>
+</html>
