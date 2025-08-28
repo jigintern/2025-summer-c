@@ -31,6 +31,7 @@ export function initMap(mapid: string, onShapeCreated: (layer: LeafletLayer) => 
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxNativeZoom: 19,
     maxZoom: 22,
+    minZoom: 5,
   }).addTo(map);
 
   /** マーカーや情報ボックスを保持するための専用レイヤーグループ。 */

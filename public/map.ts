@@ -180,6 +180,14 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
 // ================== 初期化処理 ==================
 /** Leafletマップのインスタンス。 */
 export const map: LeafletMap = initMap("map", handleShapeCreated);
+
+// マップの移動範囲を全世界に制限
+const worldBounds = L.latLngBounds(
+    L.latLng(-90, -180), // 南西の角
+    L.latLng(90, 180)    // 北東の角
+);
+map.setMaxBounds(worldBounds);
+
 map.setView([35.943, 136.188], 15);
 
 // 初期データを一度だけ、全範囲で読み込む
@@ -189,6 +197,7 @@ loadAndRenderData();
 const drawRectangleButton = document.getElementById('draw-rectangle') as HTMLButtonElement;
 const drawPolygonButton = document.getElementById('draw-polygon') as HTMLButtonElement;
 const drawCircleButton = document.getElementById('draw-circle') as HTMLButtonElement;
+
 
 const rectangleDrawer = new L.Draw.Rectangle(map);
 const polygonDrawer = new L.Draw.Polygon(map);

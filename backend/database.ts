@@ -1,25 +1,4 @@
 import {ItemData} from "../types/schema.ts";
-export async function findByDecade(kv: Deno.Kv, gte: number, lt: number){
-    if(gte === -1){
-        const items = kv.list({
-            prefix: ["itemsDecades"],
-        })
-        const ret: any[] = [];
-        for await (const item of items) {
-            ret.push(item);
-        }
-        return ret;
-    }
-    const items = kv.list({
-		start: ["itemsDecades", gte],
-		end: ["itemsDecades", lt]
-	});
-    const ret: any[] = [];
-    for await (const item of items) {
-        ret.push(item);
-    }
-    return ret;
-}
 
 export async function findById(kv: Deno.Kv, id: string){
     const data = await kv.get(["items", id]);
@@ -27,12 +6,19 @@ export async function findById(kv: Deno.Kv, id: string){
 }
 
 export async function find(kv: Deno.Kv, year: number, x: number, y: number, x2: number, y2: number){
-    const retID = await findByDecade(kv, year, year+10);
-    let ans : any[]  = []
-    for await (const i of retID){
-        const dat = await findById(kv, i.value);
-        const data : ItemData = dat as ItemData;
+    let ans : any[] = [];
+    const dataList = await kv.list({
+        prefix: ["items"],
+    })
+    let datas : any[] = [];
+    for await (const item of dataList) {
+        datas.push(item as ItemData);
+    }
+    for await (const data of datas){
         const con = data["geometry"]["geometry"]["coordinates"];
+        if(year !== -1 && (data["decade"]["gt"] > year || data["decade"]["lte"] < year)){
+            continue;
+        }
         con.forEach((co: any) => {
             co.forEach((c: any) => {
                 const dataX = c[0];
