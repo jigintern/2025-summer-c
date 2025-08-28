@@ -17,6 +17,7 @@ export interface Content {
 }
 
 export interface ItemData {
+    id: string;
     name: string;
     geometry: GeoJSON;
     decade: Decade | null;

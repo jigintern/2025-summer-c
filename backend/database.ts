@@ -1,7 +1,8 @@
 import {ItemData} from "../types/schema.ts";
 
 export async function findById(kv: Deno.Kv, id: string){
-    return await kv.get(["items", id]);
+    const data = await kv.get(["items", id]);
+    return data["value"];
 }
 
 export async function find(kv: Deno.Kv, year: number, x: number, y: number, x2: number, y2: number){

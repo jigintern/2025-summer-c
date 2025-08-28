@@ -3,13 +3,13 @@
  * これには、マップの初期化、ユーザーインタラクションの処理、サーバーとのデータ同期などが含まれます。
  */
 
-"use strict";
+'use strict';
 
-import { initMap } from "./map-initializer.ts";
-import { MapDataInfo } from "../types/map.ts";
-import { LeafletMap, LeafletLayer, LeafletGlobal } from "../types/leaflet.ts";
-import { postJson, queryJson } from "../utils/api.ts";
-import { PostSubmission } from "../types/postData.ts";
+import {initMap} from "./map-initializer.ts";
+import {MapDataInfo} from "../types/map.ts";
+import {LeafletGlobal, LeafletLayer, LeafletMap} from "../types/leaflet.ts";
+import {postJson, queryJson, postComment, getComments} from "../utils/api.ts";
+import {PostSubmission} from "../types/postData.ts";
 
 export  let allPosts: PostSubmission[] = []; // ★ 1. すべての投稿データをここに保持します
 
@@ -39,20 +39,26 @@ async function loadAndRenderData(): Promise<void> {
 
         map.markerLayer.clearLayers();
         posts.forEach(post => {
-            map.addInfoBox(post);
+            const layer = map.addInfoBox(post);
+            // 領域クリック時のイベントリスナーを追加
+            layer.on('click', (e) => {
+                getComments(post["id"]); //テスト用にGETリクエスト
+            });
         });
     } catch (error) {
         console.error("Failed to load initial data:", error);
     }
 }
-
 /**
  * ユーザーからの情報入力を求めるモーダルウィンドウを表示します。
  * @returns {Promise<MapDataInfo | null>} ユーザーが情報を入力して決定した場合はその情報を、キャンセルした場合はnullを解決するPromise。
  */
 function showInfoModal(): Promise<MapDataInfo | null> {
-    const introduction = document.getElementById("introduction") as HTMLElement;
+    /** ユーザーに領域描画を促す説明の要素 */
+    const introduction = document.getElementById('introduction') as HTMLElement;
+    // introduction.style.display = "none";
     modal.clear();
+    // modal.style.display = "block";
 
     return new Promise((resolve) => {
         const onSubmit = (e: Event) => {
@@ -67,13 +73,16 @@ function showInfoModal(): Promise<MapDataInfo | null> {
         };
 
         const cleanup = () => {
-            modal.style.display = "none";
-            modal.removeEventListener("submit", onSubmit);
-            modal.removeEventListener("cancel", onCancel);
+            // introduction.style.display = "block";
+            modal.style.display = 'none';
+            modal.removeEventListener('submit', onSubmit);
+            modal.removeEventListener('cancel', onCancel);
+            // drawerComponent.close();
+
         };
 
-        modal.addEventListener("submit", onSubmit, { once: true });
-        modal.addEventListener("cancel", onCancel, { once: true });
+        modal.addEventListener('submit', onSubmit, { once: true });
+        modal.addEventListener('cancel', onCancel, { once: true });
     });
 }
 
@@ -84,24 +93,33 @@ function showInfoModal(): Promise<MapDataInfo | null> {
  */
 async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
     const bounds = layer.getBounds();
-    const zoom = map.getBoundsZoom(bounds, false);
-    const nw = bounds.getNorthWest();
+
+    // 描画された領域が左上に表示されるようにマップを調整
+    const zoom = map.getBoundsZoom(bounds, false); // パディングなしでズームレベルを取得
+    const nw = bounds.getNorthWest(); // 領域の北西（左上）の角を取得
+
+    // 領域の左上の角をマップビューの左上に合わせるための中心点を計算
 
     const nwPixel = map.project(nw, zoom);
     const mapSize = map.getSize();
     const centerPixel = nwPixel.add(mapSize.divideBy(2));
     const newCenter = map.unproject(centerPixel, zoom);
 
+    // 新しい中心とズームレベルを一度に設定
     map.setView(newCenter, zoom, { animate: true });
 
-    modal.appear(newCenter.lat, newCenter.lng)
+    // drawerComponent.open()
+    modal.appear(newCenter.lat, newCenter.lng);
     const info = await showInfoModal();
-    modal.close()
+    modal.close();
+
 
     if (info && 'era' in info) {
         const eraParts = (info.era as string).split('-');
         if (eraParts.length !== 2) {
-            alert("時代の入力形式が正しくありません。例: '1980-1990' のように入力してください。");
+            alert(
+                "時代の入力形式が正しくありません。例: '1980-1990' のように入力してください。",
+            );
             return false;
         }
 
@@ -109,7 +127,9 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
         const lte = parseInt(eraParts[1], 10);
 
         if (Number.isNaN(gt) || Number.isNaN(lte)) {
-            alert("時代の入力形式が正しくありません。例: '1980-1990' のように入力してください。");
+            alert(
+                "時代の入力形式が正しくありません。例: '1980-1990' のように入力してください。",
+            );
             return false;
         }
 
@@ -126,17 +146,24 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
         try {
             const response = await postJson(submission);
             if (response.ok) {
-                map.addInfoBox(submission);
                 allPosts.push(submission); // ★ 新しく追加したデータもallPostsに追加
+
+                const postLayer = map.addInfoBox(submission);
+                // 領域クリック時のイベントリスナーを追加
+                const respJson = await response.json();
+                postLayer.on('click', (e) => {
+                    getComments(respJson["id"]); //テスト用にGETリクエスト
+                });
+
                 return true;
             } else {
-                console.error("Failed to save data", await response.text());
-                alert("データの保存に失敗しました。");
+                console.error('Failed to save data', await response.text());
+                alert('データの保存に失敗しました。');
                 return false;
             }
         } catch (error) {
-            console.error("Error posting data", error);
-            alert("データの送信中にエラーが発生しました。");
+            console.error('Error posting data', error);
+            alert('データの送信中にエラーが発生しました。');
             return false;
         }
     }
@@ -169,12 +196,12 @@ export function filterMapByDecade(startYear: number, endYear: number): void {
 
 // ================== 初期化処理 ==================
 /** Leafletマップのインスタンス。 */
-export const map: LeafletMap = initMap("map", handleShapeCreated);
+export const map: LeafletMap = initMap('map', handleShapeCreated);
 
 // マップの移動範囲を全世界に制限
 const worldBounds = L.latLngBounds(
     L.latLng(-90, -180), // 南西の角
-    L.latLng(90, 180)    // 北東の角
+    L.latLng(90, 180), // 北東の角
 );
 map.setMaxBounds(worldBounds);
 
@@ -184,14 +211,11 @@ map.setView([35.943, 136.188], 15);
 loadAndRenderData();
 
 // ================== カスタム描画コントロール ==================
-const drawRectangleButton = document.getElementById('draw-rectangle') as HTMLButtonElement;
-const drawPolygonButton = document.getElementById('draw-polygon') as HTMLButtonElement;
-const drawCircleButton = document.getElementById('draw-circle') as HTMLButtonElement;
 
-const rectangleDrawer = new L.Draw.Rectangle(map);
+const drawPolygonButton = document.getElementById(
+    'draw-polygon',
+) as HTMLButtonElement;
+
 const polygonDrawer = new L.Draw.Polygon(map);
-const circleDrawer = new L.Draw.Circle(map);
 
-drawRectangleButton.addEventListener('click', () => rectangleDrawer.enable());
 drawPolygonButton.addEventListener('click', () => polygonDrawer.enable());
-drawCircleButton.addEventListener('click', () => circleDrawer.enable());

@@ -28,3 +28,24 @@ export const queryJson = async (params: QueryParams): Promise<PostSubmission[]> 
     }
     return await response.json();
 };
+
+export const postComment = async (id: string, comment: string): Promise<Response> => {
+    const endpoint = `${BASE_URL}/post-json`;
+    return fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+}
+
+export const getComments = async (id: string): Promise<Response[]> => {
+    const endpoint = `${BASE_URL}/get-comments?id=${id}`;
+    const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    if (!response.ok) {
+        throw new Error(`Server responded with an error: ${response.status}`);
+    }
+    return await response.json();
+}

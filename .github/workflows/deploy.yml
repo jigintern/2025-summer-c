@@ -1,9 +1,9 @@
 name: Deploy
 on:
   push:
-    branches: #46-longitude
+    branches: main
   pull_request:
-    branches: #46-longitude
+    branches: main
 
 jobs:
   deploy:
@@ -29,7 +29,7 @@ jobs:
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "kotaoka-2025-summer-75"
+          project: "kaeru-2025-summer-86"
           entrypoint: "main.ts"
           root: ""
           
