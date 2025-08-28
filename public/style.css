@@ -1,3 +1,20 @@
+
+:root {
+    /*--primary-color:;*/
+    --background-color: #ECDCBF;
+    --background-color-light: #ffeadb;
+    --accent-color: #9B3B32;
+    --accent-color-deep: #803028;
+    --sub-color: #687786;
+    
+}
+
+.klee-one-regular {
+    font-family: "Klee One", cursive;
+    font-weight: 400;
+    font-style: normal;
+}
+
 /* ツールチップの背景と枠線を透明にする */
 .info-tooltip {
     background-color: transparent;
@@ -7,14 +24,13 @@
 
 /* 情報ボックス本体のスタイル */
 .info-box {
-    background-color: rgba(255, 255, 255, 0.85); /* 少しだけ透けた白 */
+    background-color: rgba(255, 255, 255, 1); /* 少しだけ透けた白 */
     padding: 5px 10px;
     border-radius: 5px;
     border: 1px solid #777;
+    z-index: 500;
+    position: relative;
 }
-
-
-
 
 .hide-tooltips .leaflet-tooltip.info-tooltip {
     display: none;

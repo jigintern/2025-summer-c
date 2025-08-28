@@ -49,12 +49,12 @@ class PostForm extends HTMLElement {
 		// このカスタム要素をShadow DOMというカプセル化されたDOMツリーにアタッチする
 		this.attachShadow({ mode: 'open' }); // mode:open ならば .shadowRoot で外部からこのDOMにアクセスできる. 推奨モード.
 	}
-
+    
 	// このカスタム要素がページ(ドキュメントのDOM)に追加されたときに呼び出されるメソッド. ここで初めてHTMLを記入.
 	connectedCallback() {
 		if (this.shadowRoot) { // ちゃんと追加先のDOMが取得できるなら
 			this.shadowRoot.innerHTML = content; // そのinnerHTMLを書き換える
-
+            
             // submitInfoボタンが押されたら_submitを呼ぶ
 			this.shadowRoot.getElementById('submitInfo')?.addEventListener(
 				'click',
@@ -121,6 +121,18 @@ class PostForm extends HTMLElement {
 		(this.shadowRoot.getElementById('bodyText') as HTMLTextAreaElement)
 			.value = '';
 	}
+    
+    appear(top: number, left: number) {
+        this.style.display = "block";
+        this.style.top = `${top}px`;
+        this.style.left = `${left}px`;
+        
+    }
+    close() {
+        this.style.display = "none";
+        this.style.top = "-100%";
+        this.style.left = "-100%";
+    }
 }
 
 
