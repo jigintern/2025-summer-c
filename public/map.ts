@@ -16,13 +16,14 @@ export  let allPosts: PostSubmission[] = []; // ★ 1. すべての投稿デー�
 // Leaflet.jsから提供されるグローバルなLオブジェクト。
 declare const L: LeafletGlobal;
 
+
 // ================== DOM要素取得 ==================
 
 /** ユーザーインターフェースのモーダルウィンドウ要素。 */
-const modal = document.getElementById("infoModal") as HTMLElement & {
-    clear: () => void;
-    appear: (top: number, left: number) => void;
-    close: () => void;
+const postForm = document.getElementById('infoModal') as HTMLElement & {
+	clear: () => void;
+	open: () => void;
+	close: () => void;
 };
 
 // ================== 関数定義 ==================
@@ -55,11 +56,10 @@ async function loadAndRenderData(): Promise<void> {
  * @returns {Promise<MapDataInfo | null>} ユーザーが情報を入力して決定した場合はその情報を、キャンセルした場合はnullを解決するPromise。
  */
 function showInfoModal(): Promise<MapDataInfo | null> {
-    /** ユーザーに領域描画を促す説明の要素 */
-    const introduction = document.getElementById('introduction') as HTMLElement;
-    // introduction.style.display = "none";
-    modal.clear();
-    // modal.style.display = "block";
+	/** ユーザーに領域描画を促す説明の要素 */
+	
+	postForm.clear();
+    postForm.open();
 
     return new Promise((resolve) => {
         const onSubmit = (e: Event) => {
@@ -73,18 +73,17 @@ function showInfoModal(): Promise<MapDataInfo | null> {
             resolve(null);
         };
 
-        const cleanup = () => {
-            // introduction.style.display = "block";
-            modal.style.display = 'none';
-            modal.removeEventListener('submit', onSubmit);
-            modal.removeEventListener('cancel', onCancel);
-            // drawerComponent.close();
+		const cleanup = () => {
+			// introduction.style.display = "block";
+			postForm.removeEventListener('submit', onSubmit);
+			postForm.removeEventListener('cancel', onCancel);
+			// drawerComponent.close();
+            postForm.close();
+		};
 
-        };
-
-        modal.addEventListener('submit', onSubmit, { once: true });
-        modal.addEventListener('cancel', onCancel, { once: true });
-    });
+		postForm.addEventListener('submit', onSubmit, { once: true });
+		postForm.addEventListener('cancel', onCancel, { once: true });
+	});
 }
 
 /**
@@ -99,20 +98,19 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
     const zoom = map.getBoundsZoom(bounds, false); // パディングなしでズームレベルを取得
     const nw = bounds.getNorthWest(); // 領域の北西（左上）の角を取得
 
-    // 領域の左上の角をマップビューの左上に合わせるための中心点を計算
-
-    const nwPixel = map.project(nw, zoom);
-    const mapSize = map.getSize();
-    const centerPixel = nwPixel.add(mapSize.divideBy(2));
-    const newCenter = map.unproject(centerPixel, zoom);
+	// 領域の左上の角をマップビューの左上に合わせるための中心点を計算
+	const nwPixel = map.project(nw, zoom);
+	const mapSize = map.getSize();
+	const padding = L.point(40, 40); // 左と上に40pxのパディング
+	const centerPixel = nwPixel.subtract(padding).add(mapSize.divideBy(2));
+	const newCenter = map.unproject(centerPixel, zoom);
 
     // 新しい中心とズームレベルを一度に設定
     map.setView(newCenter, zoom, { animate: true });
 
-    // drawerComponent.open()
-    modal.appear(newCenter.lat, newCenter.lng);
-    const info = await showInfoModal();
-    modal.close();
+	// drawerComponent.open()
+	const info = await showInfoModal();
+	
 
 
     if (info && 'era' in info) {

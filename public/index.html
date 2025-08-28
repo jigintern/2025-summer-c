@@ -29,6 +29,9 @@
             /*font-family: "Klee One", cursive;*/
             font-weight: 400;
             font-style: normal;
+
+            background-color: rgb(62, 62, 62);
+            
         }
 
         .body-container {
@@ -37,12 +40,16 @@
             height: calc(100% - 50px - 32px);
             width: calc(100% - 256px - 32px);
             left: 256px;
-            box-shadow: /* TVキャビネットが落とす影 */ 10px 10px 25px rgba(0, 0, 0, 0.4),
-                /* アクセントカラーを使用した木製フレーム */ 0 0 0 15px var(--accent-color),
+            box-shadow: /* TVキャビネットが落とす影 */ 10px 10px 25px rgba(46, 45, 45, 0.4),
+                 0 0 0 15px #1b1b1b,
                 /* 内側のベゼルの影 */ inset 0 0 25px 15px rgba(0, 0, 0, 0.6);
-            margin: 20px 16px 16px;
+            border-radius: 1em;
+            margin: 20px;
             /*padding : 25px;*/
             text-align: center;
+            z-index: 1000;
+            overflow: hidden;
+            
 
         }
 
@@ -52,6 +59,7 @@
             left: 0;
             width: 100%;
             height: 100%;
+            box-shadow:  /* TVキャビネットが落とす影 */ inset 0 0 25px 25px rgba(0, 0, 0, 0.4);
             background: linear-gradient(to bottom, transparent, rgba(170, 170, 170, 0.06), rgba(136, 136, 136, 0.02), rgba(102, 102, 102, 0.06), rgba(68, 68, 68, 0.08), rgba(34, 34, 34, 0.13), rgba(68, 68, 68, 0.05), transparent),
             repeating-linear-gradient(transparent 0 2px, rgba(37, 36, 41, 0.07) 2px 4px);
             animation: moveBand 4s linear infinite;
@@ -108,7 +116,6 @@
 <header-component></header-component>
 <menu-component>
     <button id="draw-polygon">ポリゴン</button>
-    <post-form id="infoModal" style="display: none;"></post-form>
     <!--    <introduction-component></introduction-component>-->
     <slider-component></slider-component>
 </menu-component>
@@ -116,6 +123,7 @@
 <div class="body-container">
     <div class="noise"></div>
     <div id="map"></div>
+    <post-form id="infoModal" ></post-form>
 </div>
 
 <!--<drawer-component id="drawer">-->
