@@ -39,7 +39,6 @@ async function loadAndRenderData(): Promise<void> {
 
         map.markerLayer.clearLayers();
         posts.forEach(post => {
-            console.log(post);
             const layer = map.addInfoBox(post);
             // 領域クリック時のイベントリスナーを追加
             layer.on('click', (e) => {
