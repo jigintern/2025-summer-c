@@ -12,7 +12,7 @@ export async function find(kv: Deno.Kv, year: number, x: number, y: number, x2: 
     })
     let datas : any[] = [];
     for await (const item of dataList) {
-        datas.push(item as ItemData);
+        datas.push(item["value"] as ItemData);
     }
     for await (const data of datas){
         const con = data["geometry"]["geometry"]["coordinates"];

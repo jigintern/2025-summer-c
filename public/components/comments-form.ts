@@ -1,3 +1,4 @@
+
 // コメント投稿・閲覧用のWeb Component
 
 const content: string = `  
@@ -6,6 +7,30 @@ const content: string = `
         display: flex;
         flex-direction: column;
         gap: 20px;
+        max-height: 70vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+        padding-right: 5px;
+      }
+      
+      /* Webkit (Chrome, Safari, Edge) のスクロールバースタイル */
+      .comment-container::-webkit-scrollbar {
+        width: 8px;
+      }
+      
+      .comment-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+      
+      .comment-container::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+      }
+      
+      .comment-container::-webkit-scrollbar-thumb:hover {
+        background: #555;
       }
 
       .comment-box {
@@ -65,6 +90,29 @@ const content: string = `
 
       .comments-list {
         margin-top: 20px;
+        max-height: 40vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+      }
+      
+      /* Webkit用コメントリストのスクロールバースタイル */
+      .comments-list::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      .comments-list::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+      
+      .comments-list::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 10px;
+      }
+      
+      .comments-list::-webkit-scrollbar-thumb:hover {
+        background: #555;
       }
 
       .comment-item {
@@ -92,11 +140,18 @@ const content: string = `
         font-size: 0.9em;
         margin-top: 10px;
       }
+      
+      /* タッチデバイス用のスクロールサポート */
+      @media (pointer: coarse) {
+        .comment-container, .comments-list {
+          -webkit-overflow-scrolling: touch;
+        }
+      }
     </style>
     <div class="comment-container">
       <div class="comment-box">
           <h3>コメント投稿</h3>
-          <p>アイテムID<input type="text" id="itemId"></p>
+<!--          <p>アイテムID: <span id="displayItemId"></span></p>-->
           <p>コメント内容<textarea id="commentText" rows="4"></textarea></p>
           <div id="statusMessage" class="error"></div>
           <div>
@@ -106,9 +161,9 @@ const content: string = `
       </div>
 
       <div class="comment-box">
-          <h3>コメント取得</h3>
-          <p>アイテムID<input type="text" id="fetchItemId"></p>
-          <button id="fetchComments" class="fetch">コメントを取得</button>
+          <h3>コメント一覧</h3>
+<!--          <p>アイテムID: <span id="displayFetchItemId"></span></p>-->
+<!--          <button id="fetchComments" class="fetch">コメントを取得</button>-->
           <div class="comments-list" id="commentsList"></div>
       </div>
     </div>
@@ -116,9 +171,37 @@ const content: string = `
 
 // WebComponent
 class CommentForm extends HTMLElement {
+    private _itemId: string = '';
+
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
+    }
+
+    setItemId(itemId: string) {
+        this._itemId = itemId;
+        this.updateDisplayItemId();
+    }
+
+    // IDの表示を更新するメソッド
+    private updateDisplayItemId() {
+        if (!this.shadowRoot) return;
+
+        const displayItemId = this.shadowRoot.getElementById('displayItemId');
+        const displayFetchItemId = this.shadowRoot.getElementById('displayFetchItemId');
+
+        if (displayItemId) {
+            displayItemId.textContent = this._itemId;
+        }
+
+        if (displayFetchItemId) {
+            displayFetchItemId.textContent = this._itemId;
+        }
+
+        // コメントを自動的に読み込む
+        if (this._itemId) {
+            this._fetchComments();
+        }
     }
 
     // コンポーネントがDOMに追加されたときに呼び出されるメソッド
@@ -143,7 +226,36 @@ class CommentForm extends HTMLElement {
                 'click',
                 () => this._fetchComments()
             );
+
+            // 既存のIDがあれば表示を更新
+            if (this._itemId) {
+                this.updateDisplayItemId();
+            }
+
+            // タッチデバイスでのスクロールを改善するためのイベントリスナー
+            this._addTouchScrollHandlers();
         }
+    }
+
+    // タッチデバイス用のスクロールハンドラー追加
+    private _addTouchScrollHandlers() {
+        if (!this.shadowRoot) return;
+
+        const container = this.shadowRoot.querySelector('.comment-container');
+        const commentsList = this.shadowRoot.getElementById('commentsList');
+
+        // スクロール領域内でのタッチイベントの伝播を停止（ドロワーが閉じないように）
+        [container, commentsList].forEach(element => {
+            if (element) {
+                element.addEventListener('touchstart', (e) => {
+                    e.stopPropagation();
+                });
+
+                element.addEventListener('touchmove', (e) => {
+                    e.stopPropagation();
+                }, { passive: true });
+            }
+        });
     }
 
     // コメント投稿処理
@@ -151,13 +263,12 @@ class CommentForm extends HTMLElement {
         if (!this.shadowRoot) return;
 
         const statusMessage = this.shadowRoot.getElementById('statusMessage');
-        const itemId = (this.shadowRoot.getElementById('itemId') as HTMLInputElement).value.trim();
         const commentText = (this.shadowRoot.getElementById('commentText') as HTMLTextAreaElement).value.trim();
 
         // 入力バリデーション
-        if (!itemId) {
+        if (!this._itemId) {
             if (statusMessage) {
-                statusMessage.textContent = 'アイテムIDを入力してください';
+                statusMessage.textContent = 'アイテムIDが設定されていません';
                 statusMessage.className = 'error';
             }
             return;
@@ -179,7 +290,7 @@ class CommentForm extends HTMLElement {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    id: itemId,
+                    id: this._itemId,
                     comment: commentText,
                     created_at: new Date().toISOString()
                 })
@@ -199,8 +310,6 @@ class CommentForm extends HTMLElement {
             }
 
             // 自動的にコメントリストを更新
-            const fetchItemId = this.shadowRoot.getElementById('fetchItemId') as HTMLInputElement;
-            fetchItemId.value = itemId;
             this._fetchComments();
 
             // フォームをクリア
@@ -249,11 +358,10 @@ class CommentForm extends HTMLElement {
         if (!this.shadowRoot) return;
 
         const commentsList = this.shadowRoot.getElementById('commentsList');
-        const fetchItemId = (this.shadowRoot.getElementById('fetchItemId') as HTMLInputElement).value.trim();
 
-        if (!fetchItemId) {
+        if (!this._itemId) {
             if (commentsList) {
-                commentsList.innerHTML = '<p class="error">アイテムIDを入力してください</p>';
+                commentsList.innerHTML = '<p class="error">アイテムIDが設定されていません</p>';
             }
             return;
         }
@@ -263,7 +371,7 @@ class CommentForm extends HTMLElement {
         }
 
         try {
-            const response = await fetch(`/get-comments?id=${encodeURIComponent(fetchItemId)}`);
+            const response = await fetch(`/get-comments?id=${encodeURIComponent(this._itemId)}`);
 
             if (!response.ok) {
                 throw new Error(`エラー: ${response.status}`);
@@ -290,12 +398,15 @@ class CommentForm extends HTMLElement {
                     commentElement.innerHTML = `
             <div>${this._escapeHTML(comment.comment)}</div>
             <div class="comment-meta">
-              ID: ${this._escapeHTML(comment.id)} | 
+<!--              ID: ${this._escapeHTML(comment.id)} | -->
               投稿日時: ${formattedDate}
             </div>
           `;
                     commentsList.appendChild(commentElement);
                 });
+
+                // コメントが多い場合は自動的にスクロール位置を一番上に設定
+                commentsList.scrollTop = 0;
             }
 
             // 取得成功イベントを発火

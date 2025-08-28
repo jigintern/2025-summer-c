@@ -31,5 +31,4 @@ export async function dataView(kv: Deno.Kv){
     for await (const item of l) {
         console.log(item);
     }
-
 }

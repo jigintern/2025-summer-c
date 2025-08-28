@@ -19,6 +19,7 @@ declare const L: LeafletGlobal;
 const infoModal = document.getElementById("infoModal") as HTMLElement & { clear: () => void; };
 const commentModal = document.getElementById("commentModal") as HTMLElement & {
     clear: () => void;
+    setItemId: (s:string) => void;
 }
 /** ドロワー */
 const drawerComponent = document.getElementById("drawer") as HTMLElement & {
@@ -43,15 +44,15 @@ async function loadAndRenderData(): Promise<void> {
             // 領域クリック時のイベントリスナーを追加
             layer.on('click', (e) => {
                 // クリックイベントの伝播を停止（マップのクリックイベントを発火させない）
-                L.DomEvent.stopPropagation(e);
+                // L.DomEvent.stopPropagation(e);
 
                 // カスタムイベントを発火させる
-                const customEvent = new CustomEvent('area-clicked', {
-                    bubbles: true,
-                    composed: true,
-                    detail: { post, layer, event: e }
-                });
-                document.dispatchEvent(customEvent);
+                // const customEvent = new CustomEvent('area-clicked', {
+                //     bubbles: true,
+                //     composed: true,
+                //     detail: { post, layer, event: e }
+                // });
+                // document.dispatchEvent(customEvent);
 
                 // あるいは直接処理を実行することもできます
                 handleAreaClick(post, layer, e);
@@ -73,7 +74,7 @@ async function handleAreaClick(post: PostSubmission, layer: LeafletLayer, event:
 
     // 例：ドロワーを開いて詳細情報を表示
     drawerComponent.open();
-    const info = await showInfoModal();
+    const info = await showInfoModal(post["id"]);
 
 
     // 例：詳細情報を表示するためのモーダルウィンドウを表示
@@ -92,12 +93,13 @@ async function handleAreaClick(post: PostSubmission, layer: LeafletLayer, event:
  */
 function showInfoModal(itemId: string | null = null): Promise<MapDataInfo | null> {
     let modal = infoModal;
-    modal.clear();
     // コメントモードの場合
     console.log(itemId)
     if (itemId !== null) {
         modal = commentModal;
+        modal.setItemId(itemId);
     }
+    modal.clear();
 
     modal.style.display = "block";
 
@@ -203,6 +205,20 @@ const rectangleDrawer = new L.Draw.Rectangle(map);
 const polygonDrawer = new L.Draw.Polygon(map);
 const circleDrawer = new L.Draw.Circle(map);
 
-drawRectangleButton.addEventListener('click', () => rectangleDrawer.enable());
-drawPolygonButton.addEventListener('click', () => polygonDrawer.enable());
-drawCircleButton.addEventListener('click', () => circleDrawer.enable());
+drawRectangleButton.addEventListener('click', () => {
+    drawerComponent.close(); // ドロワーを閉じる
+    commentModal.clear();
+    rectangleDrawer.enable();
+});
+
+drawPolygonButton.addEventListener('click', () => {
+    drawerComponent.close(); // ドロワーを閉じる
+    commentModal.clear();
+    polygonDrawer.enable();
+});
+
+drawCircleButton.addEventListener('click', () => {
+    drawerComponent.close(); // ドロワーを閉じる
+    commentModal.clear();
+    circleDrawer.enable();
+});

@@ -8,14 +8,14 @@ export async function query(kv: Deno.Kv, req: Request) {
 
     // dataAdd(kv);
     // dataDel(kv);
-    dataView(kv);
+    // dataView(kv);
 
     const pathname = new URL(req.url).pathname;
 
     if (req.method === 'POST' && pathname === '/post-json') {
         const bod = await req.json();
-        const body : ItemData = bod as ItemData;
         const id = ulid();
+        const body : ItemData = {id : id, ...bod} as ItemData;
         kv.set(["items",id], body);
         return Response.json(body);
     }
@@ -55,7 +55,7 @@ export async function query(kv: Deno.Kv, req: Request) {
         const id = body["id"];
         const com_id = ulid();
         const com = body["comment"];
-        const created_at = body["created_at"];
+        const created_at = body["created_at"] ?? new Date().toISOString();
         const ret = await findById(kv,id);
         ret["thread"].push({
             "id": com_id,
