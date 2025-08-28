@@ -51,6 +51,9 @@ async function loadAndRenderData(): Promise<void> {
                 window.dispatchEvent(event);
             });
         });
+
+        // データ読み込み後に表示領域の投稿を更新
+        updateShowingPosts();
     } catch (error) {
         console.error("Failed to load initial data:", error);
     }
@@ -208,20 +211,22 @@ const worldBounds = L.latLngBounds(
 );
 map.setMaxBounds(worldBounds);
 
-map.setView([35.943, 136.188], 15);
-
-map.on('moveend', () => {
+const updateShowingPosts = () => {
     const bounds = map.getBounds();
     const event = new CustomEvent('map-bounds-changed', {
         detail: { bounds: {
-            north: bounds.getNorth(),
-            south: bounds.getSouth(),
-            east: bounds.getEast(),
-            west: bounds.getWest()
-        } }
+                north: bounds.getNorth(),
+                south: bounds.getSouth(),
+                east: bounds.getEast(),
+                west: bounds.getWest()
+            } }
     });
     window.dispatchEvent(event);
-});
+}
+map.on('moveend', updateShowingPosts);
+
+map.setView([35.943, 136.188], 15);
+
 
 loadAndRenderData();
 

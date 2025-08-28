@@ -30,7 +30,9 @@
             font-weight: 400;
             font-style: normal;
 
-            background-color: rgb(62, 62, 62);
+            background-color: var(--background-color);
+            background-image: url(./sand-noise.svg);
+            /*background-color: rgb(62, 62, 62);*/
             
         }
 
@@ -40,12 +42,21 @@
             height: calc(100% - 50px - 32px);
             width: calc(100% - 256px - 32px);
             left: 256px;
-            box-shadow: /* TVキャビネットが落とす影 */ 10px 10px 25px rgba(46, 45, 45, 0.4),
-                 0 0 0 15px #1b1b1b,
+            box-shadow: /* TVキャビネットが落とす 影 */ inset 10px 10px 25px rgba(46, 45, 45, 0.4),
+                 0 0 0 15px var(--wood-color),
                 /* 内側のベゼルの影 */ inset 0 0 25px 15px rgba(0, 0, 0, 0.6);
             border-radius: 1em;
+            
+            /*border-image-source: url("./img/wood.jpg");*/
+            /*border-image-slice: 30;*/
+            /*border-image-width: 20px;*/
+            box-sizing: border-box;
+            /*border-image-repeat: round;*/
+            
+            border: 25px solid  #3e3e3e;
+            
             margin: 20px;
-            /*padding : 25px;*/
+            /*padding : 20px;*/
             text-align: center;
             z-index: 1000;
             overflow: hidden;
