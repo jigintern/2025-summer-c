@@ -15,13 +15,8 @@ export async function dataAdd(kv: Deno.Kv) {
 }
 
 export async function dataDel(kv: Deno.Kv){
-    const l = kv.list({prefix: ["itemsDecades"]});
+    const l = kv.list({prefix: []});
     for await (const item of l) {
-        await kv.delete(item.key);
-    }
-
-    const l2 = kv.list({prefix: ["items"]});
-    for await (const item of l2) {
         await kv.delete(item.key);
     }
 }
