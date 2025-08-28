@@ -143,7 +143,12 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
         try {
             const response = await postJson(submission);
             if (response.ok) {
-                map.addInfoBox(submission);
+                const postLayer = map.addInfoBox(submission);
+                // 領域クリック時のイベントリスナーを追加
+                postLayer.on('click', async (e) => {
+                    const respJson = await response.json();
+                    getComments(respJson["id"]); //テスト用にGETリクエスト
+                });
                 return true;
             } else {
                 console.error('Failed to save data', await response.text());
