@@ -44,9 +44,9 @@ export async function query(kv: Deno.Kv, req: Request) {
     if(req.method === 'GET' && pathname === '/get-comments'){
         const res = new URL(req.url).searchParams;
         const id = res.get("id") ?? "0";
-        // console.log(id);
+        console.log(id);
         const ret = await findById(kv,id);
-        // console.log(ret["thread"]);
+        console.log(ret["thread"]);
         return Response.json(ret["thread"]);
     }
 

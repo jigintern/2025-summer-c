@@ -8,7 +8,7 @@
 import {initMap} from "./map-initializer.ts";
 import {MapDataInfo} from "../types/map.ts";
 import {LeafletGlobal, LeafletLayer, LeafletMap} from "../types/leaflet.ts";
-import {postJson, queryJson} from "../utils/api.ts";
+import {postJson, queryJson, postComment, getComments} from "../utils/api.ts";
 import {PostSubmission} from "../types/postData.ts";
 
 // Leaflet.jsから提供されるグローバルなLオブジェクト。
@@ -46,89 +46,21 @@ const commentModal = document.getElementById("commentModal") as HTMLElement & {
  * サーバーから地図データを非同期で読み込み、マップを再描画します。
  */
 async function loadAndRenderData(): Promise<void> {
-	try {
-		// クエリの範囲を全世界に広げて、すべてのデータを取得するようにします
-		const posts = await queryJson({
-			year: -1,
-			x: -180,
-			y: -90,
-			x2: 180,
-			y2: 90,
-		});
-		map.markerLayer.clearLayers();
-		posts.forEach((post) => {
-            const layer = map.addInfoBox(post);
-            // 領域クリック時のイベントリスナーを追加
-            layer.on('click', (e) => {
-                // クリックイベントの伝播を停止（マップのクリックイベントを発火させない）
-                // L.DomEvent.stopPropagation(e);
-
-                // カスタムイベントを発火させる
-                // const customEvent = new CustomEvent('area-clicked', {
-                //     bubbles: true,
-                //     composed: true,
-                //     detail: { post, layer, event: e }
-                // });
-                // document.dispatchEvent(customEvent);
-
-                // あるいは直接処理を実行することもできます
-                handleAreaClick(post, layer, e);
-            });
-		});
-	} catch (error) {
-		console.error('Failed to load initial data:', error);
-	}
     try {
         // クエリの範囲を全世界に広げて、すべてのデータを取得するようにします
         const posts = await queryJson({ year: -1, x: -180, y: -90, x2: 180, y2: 90 });
         map.markerLayer.clearLayers();
         posts.forEach(post => {
             const layer = map.addInfoBox(post);
-
             // 領域クリック時のイベントリスナーを追加
             layer.on('click', (e) => {
-                // クリックイベントの伝播を停止（マップのクリックイベントを発火させない）
-                // L.DomEvent.stopPropagation(e);
-
-                // カスタムイベントを発火させる
-                // const customEvent = new CustomEvent('area-clicked', {
-                //     bubbles: true,
-                //     composed: true,
-                //     detail: { post, layer, event: e }
-                // });
-                // document.dispatchEvent(customEvent);
-
-                // あるいは直接処理を実行することもできます
-                handleAreaClick(post, layer, e);
+                getComments(post["id"]); //テスト用にGETリクエスト
             });
         });
     } catch (error) {
         console.error("Failed to load initial data:", error);
     }
 }
-
-/**
- * 領域がクリックされたときの処理
- * @param post 領域に関連するデータ
- * @param layer クリックされたレイヤー
- * @param event クリックイベント
- */
-async function handleAreaClick(post: PostSubmission, layer: LeafletLayer, event: LeafletEvent): void {
-    console.log('領域がクリックされました:', post);
-
-    // 例：ドロワーを開いて詳細情報を表示
-    drawerComponent.open();
-    const info = await showInfoModal(post["id"]);
-
-
-    // 例：詳細情報を表示するためのモーダルウィンドウを表示
-    // showInfoModal(post.id).then(info => {
-    //     if (info) {
-    //         // 何か処理...
-    //     }
-    // });
-}
-
 
 /**
  * ユーザーからの情報入力を求めるモーダルウィンドウを表示します。
@@ -138,7 +70,6 @@ async function handleAreaClick(post: PostSubmission, layer: LeafletLayer, event:
 function showInfoModal(itemId: string | null = null): Promise<MapDataInfo | null> {
     let modal = infoModal;
     // コメントモードの場合
-    console.log(itemId)
     if (itemId !== null) {
         modal = commentModal;
         modal.setItemId(itemId);
@@ -179,9 +110,10 @@ function showInfoModal(itemId: string | null = null): Promise<MapDataInfo | null
 /**
  * ユーザーがマップ上に新しい図形を描画した際の処理を行います。
  * @param {LeafletLayer} layer - 描画された図形レイヤー。
+ * @param {string | null} itemId - 既存のアイテムIDがある場合に指定します。コメントモード用。
  * @returns {Promise<boolean>} ユーザーが情報を入力し、データが正常に追加された場合はtrue、キャンセルされた場合はfalseを解決するPromise。
  */
-async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
+async function handleShapeCreated(layer: LeafletLayer | null = null, itemId: string | null = null): Promise<boolean> {
 	const bounds = layer.getBounds();
 	// 描画された領域が左上に表示されるようにマップを調整
 	const zoom = map.getBoundsZoom(bounds, false); // パディングなしでズームレベルを取得
@@ -198,7 +130,7 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
 
 	// drawerComponent.open()
 	modal.appear(newCenter.lat, newCenter.lng);
-	const info = await showInfoModal();
+	const info = await showInfoModal(itemId);
 	modal.close();
 
 	if (info && 'era' in info) {
