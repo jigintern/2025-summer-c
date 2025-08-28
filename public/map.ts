@@ -32,7 +32,7 @@ const drawerComponent = document.getElementById("drawer") as HTMLElement & {
 async function loadAndRenderData(): Promise<void> {
     try {
         // クエリの範囲を全世界に広げて、すべてのデータを取得するようにします
-        const posts = await queryJson({ year: new Date().getFullYear(), x: -180, y: -90, x2: 180, y2: 90 });
+        const posts = await queryJson({ year: -1, x: -180, y: -90, x2: 180, y2: 90 });
         map.markerLayer.clearLayers();
         posts.forEach(post => {
             map.addInfoBox(post);
