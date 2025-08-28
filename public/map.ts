@@ -16,7 +16,10 @@ declare const L: LeafletGlobal;
 
 // ================== DOM要素取得 ==================
 /** ユーザーインターフェースのモーダルウィンドウ要素。 */
-const modal = document.getElementById("infoModal") as HTMLElement & { clear: () => void; };
+const infoModal = document.getElementById("infoModal") as HTMLElement & { clear: () => void; };
+const commentModal = document.getElementById("commentModal") as HTMLElement & {
+    clear: () => void;
+}
 /** ドロワー */
 const drawerComponent = document.getElementById("drawer") as HTMLElement & {
     open: () => void;
@@ -32,7 +35,7 @@ const drawerComponent = document.getElementById("drawer") as HTMLElement & {
 async function loadAndRenderData(): Promise<void> {
     try {
         // クエリの範囲を全世界に広げて、すべてのデータを取得するようにします
-        const posts = await queryJson({ year: new Date().getFullYear(), x: -180, y: -90, x2: 180, y2: 90 });
+        const posts = await queryJson({ year: -1, x: -180, y: -90, x2: 180, y2: 90 });
         map.markerLayer.clearLayers();
         posts.forEach(post => {
             map.addInfoBox(post);
@@ -44,10 +47,18 @@ async function loadAndRenderData(): Promise<void> {
 
 /**
  * ユーザーからの情報入力を求めるモーダルウィンドウを表示します。
+ * @param {string | null} itemId - 既存のアイテムIDがある場合に指定します。コメントモード用。
  * @returns {Promise<MapDataInfo | null>} ユーザーが情報を入力して決定した場合はその情報を、キャンセルした場合はnullを解決するPromise。
  */
-function showInfoModal(): Promise<MapDataInfo | null> {
+function showInfoModal(itemId: string | null = "01K3Q4JF0PXVYCCS9M0S1Y69DS"): Promise<MapDataInfo | null> {
+    let modal = infoModal;
     modal.clear();
+    // コメントモードの場合
+    console.log(itemId)
+    if (itemId !== null) {
+        modal = commentModal;
+    }
+
     modal.style.display = "block";
 
     return new Promise((resolve) => {
