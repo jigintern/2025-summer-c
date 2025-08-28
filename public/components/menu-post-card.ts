@@ -19,6 +19,15 @@ class MenuPostCard extends HTMLElement {
 
   connectedCallback() {
     this.render();
+    this.addEventListener('click', () => {
+        if (!this._post) return;
+        const event = new CustomEvent('show-comments', {
+            detail: { post: this._post },
+            bubbles: true,
+            composed: true
+        });
+        this.dispatchEvent(event);
+    });
   }
 
   render() {
@@ -30,6 +39,11 @@ class MenuPostCard extends HTMLElement {
           padding: 12px;
           border: 1px solid #ddd;
           border-radius: 8px;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+        }
+        .post-card:hover {
+            background-color: rgba(0, 0, 0, 0.05);
         }
         h3 {
           margin: 0 0 8px 0;

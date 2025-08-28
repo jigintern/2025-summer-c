@@ -248,6 +248,14 @@ const setupZoomBasedVisibility = () => {
     setTimeout(toggleInfoBoxesVisibility, 500); 
 };
 
+window.addEventListener('show-comments', ((event: CustomEvent) => {
+    const post = event.detail.post as PostSubmission;
+    if (post && post.geometry) {
+        const bounds = L.geoJSON(post.geometry).getBounds();
+        map.fitBounds(bounds);
+    }
+}) as EventListener);
+
 setupZoomBasedVisibility();
 
 const polygonDrawer = new L.Draw.Polygon(map);

@@ -2,62 +2,139 @@ import { PostSubmission, Thread } from "../../types/postData.ts";
 
 const content: string = `
     <style>
-      /* [Existing styles] */
-      .comment-container {
+      :host {
+        display: block;
+        height: 100%;
+      }
+      .container {
         display: flex;
         flex-direction: column;
-        gap: 20px;
-        max-height: 70vh;
-        overflow-y: auto;
-        scrollbar-width: thin;
-        scrollbar-color: #888 #f1f1f1;
-        padding-right: 5px;
+        height: 100%;
+        gap: 16px;
       }
-      .comment-box {
-        background: #fff;
-        padding: 15px;
-        border-radius: 5px;
-        border: 1px solid #ddd;
-        margin-bottom: 10px;
+
+      .header {
+        flex-shrink: 0; /* Do not shrink */
       }
-      h3, p { margin: 5px 0; }
-      textarea { width: 95%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; min-height: 80px; resize: vertical; }
-      button { padding: 8px 12px; margin-right: 10px; cursor: pointer; background-color: #4CAF50; color: white; border: none; border-radius: 4px; }
-      button:hover { background-color: #45a049; }
-      button.cancel { background-color: #f44336; }
-      button.cancel:hover { background-color: #d32f2f; }
+
+      .content {
+        flex-grow: 1; /* Grow to fill available space */
+        overflow-y: auto; /* Scroll if content overflows */
+        min-height: 0; /* Necessary for scrolling in flexbox */
+        background-color: transparent;
+        border-top: 4px double #a1887f;
+        border-bottom: 4px double #a1887f;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+
+      .footer {
+        flex-shrink: 0; /* Do not shrink */
+        background: transparent;
+        border-top: 4px double #a1887f;
+        border-bottom: 4px double #a1887f;
+        padding: 24px;
+      }
+
+      /* Comment List Styles */
+      .comment-item {
+          border-bottom: 1px dotted #aaa;
+          padding-bottom: 16px;
+      }
+      .comment-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      .comment-text, .comment-meta {
+          font-family: 'Klee One', cursive;
+          color: #333;
+          margin: 0;
+      }
+      .comment-text {
+          font-size: 1em;
+          line-height: 1.8;
+          margin-bottom: 12px;
+      }
+      .comment-meta {
+          text-align: right;
+          font-size: 0.9em;
+      }
+
+      /* Submission Form Styles */
+      h3 {
+        font-family: 'Klee One', cursive;
+        text-align: center;
+        color: #333;
+        margin: 0 0 16px 0;
+      }
+      textarea {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        border: 1px solid #8c7853;
+        background-color: rgba(245, 232, 215, 0.2);
+        font-size: 1rem;
+        font-family: 'Zen Kaku Gothic New', sans-serif;
+        color: #333;
+        resize: vertical;
+        line-height: 1.8;
+        min-height: 80px;
+        transition: border-color 0.2s ease;
+      }
+      textarea:focus {
+        outline: none;
+        border-color: #c0392b;
+      }
+      
+      button {
+        cursor: pointer;
+        border: none;
+        background: none;
+        padding: 0;
+        font-family: 'Klee One', cursive;
+      }
+      #submitComment {
+        padding: 8px 16px;
+        background: #c0392b;
+        color: #fff;
+        border-radius: 4px;
+        display: block;
+        margin: 16px auto 0;
+        transition: background-color 0.2s ease;
+      }
+      #submitComment:hover, #submitComment:active {
+        background: #a03024;
+      }
       button.back {
         background-color: #607d8b;
-        margin-bottom: 15px;
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
       }
       button.back:hover { background-color: #546e7a; }
-      .comments-list { margin-top: 20px; max-height: 40vh; overflow-y: auto; }
-      .comment-item { background-color: #f9f9f9; padding: 10px; margin-bottom: 10px; border-radius: 5px; border-left: 4px solid #4CAF50; }
-      .comment-meta { color: #666; font-size: 0.8em; margin-top: 5px; }
-      .error { color: red; }
-      .success { color: green; }
+      .error { color: red; text-align: center; }
+      .success { color: green; text-align: center; }
     </style>
-    <div>
-      <button id="backButton" class="back">← 投稿一覧に戻る</button>
-      <div class="comment-container">
-        <div class="comment-box">
+
+    <div class="container">
+        <div class="header">
+            <button id="backButton" class="back">← 投稿一覧に戻る</button>
+        </div>
+
+        <div class="content" id="commentsList">
+            <!-- Comments will be injected here -->
+        </div>
+
+        <div class="footer">
             <h3>コメント投稿</h3>
-            <p>コメント内容<textarea id="commentText" rows="4"></textarea></p>
-            <div id="statusMessage" class="error"></div>
-            <div>
-              <button id="submitComment">投稿する</button>
-            </div>
+            <textarea id="commentText" rows="3" placeholder="ここにコメントを入力..."></textarea>
+            <div id="statusMessage"></div>
+            <button id="submitComment" type="submit">投稿</button>
         </div>
-        <div class="comment-box">
-            <h3>コメント一覧</h3>
-            <div class="comments-list" id="commentsList"></div>
-            
-        </div>
-      </div>
     </div>
 `;
-
-
 
 class CommentForm extends HTMLElement {
     private _post: PostSubmission | null = null;
@@ -91,7 +168,10 @@ class CommentForm extends HTMLElement {
         const commentText = (this.shadowRoot.getElementById('commentText') as HTMLTextAreaElement).value.trim();
 
         if (!commentText) {
-            if (statusMessage) statusMessage.textContent = 'コメント内容を入力してください';
+            if (statusMessage) {
+                statusMessage.textContent = 'コメント内容を入力してください';
+                statusMessage.className = 'error';
+            }
             return;
         }
 
@@ -135,19 +215,19 @@ class CommentForm extends HTMLElement {
             const comments: Thread[] = await response.json();
 
             if (!comments || comments.length === 0) {
-                commentsList.innerHTML = '<p>コメントはありません</p>';
+                commentsList.innerHTML = '<p style="text-align: center; font-family: \'Klee One\', cursive;">コメントはまだありません</p>';
                 return;
             }
 
             commentsList.innerHTML = '';
             comments.forEach((comment: Thread) => {
                 const date = new Date(comment.created_at);
-                const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+                const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
                 const commentElement = document.createElement('div');
                 commentElement.className = 'comment-item';
                 commentElement.innerHTML = `
-                    <div>${this._escapeHTML(comment.comment)}</div>
-                    <div class="comment-meta">投稿日時: ${formattedDate}</div>
+                    <p class="comment-text">${this._escapeHTML(comment.comment)}</p>
+                    <p class="comment-meta">―― ${formattedDate}</p>
                 `;
                 commentsList.appendChild(commentElement);
             });

@@ -19,16 +19,20 @@
     <link rel="stylesheet" href="style.css"/>
 
     <style>
+        * {
+            font-family: 'Klee One', cursive;
+        }
         html, body {
             height: 100%;
             position: relative;
             overflow: hidden;
             margin: 0;
 
-            font-family: "Zen Kaku Gothic New", sans-serif;
+            
             /*font-family: "Klee One", cursive;*/
             font-weight: 400;
             font-style: normal;
+            
 
             background-color: var(--background-color);
             background-image: url(./sand-noise.svg);
@@ -45,7 +49,7 @@
             box-shadow: /* TVキャビネットが落とす 影 */ inset 10px 10px 25px rgba(46, 45, 45, 0.4),
                  0 0 0 15px var(--wood-color),
                 /* 内側のベゼルの影 */ inset 0 0 25px 15px rgba(0, 0, 0, 0.6);
-            border-radius: 1em;
+            /* border-radius: 1em; 角丸を削除して四角にするためコメントアウト */
             
             /*border-image-source: url("./img/wood.jpg");*/
             /*border-image-slice: 30;*/

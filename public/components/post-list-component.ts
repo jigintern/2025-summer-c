@@ -3,7 +3,7 @@ import { queryJson } from "../../utils/api.ts";
 
 class PostListComponent extends HTMLElement {
   private _posts: PostSubmission[] = [];
-  private listElement: HTMLUListElement | null = null;
+  private container: HTMLElement | null = null;
 
   constructor() {
     super();
@@ -14,23 +14,35 @@ class PostListComponent extends HTMLElement {
         <style>
           :host {
             display: block;
-            padding: 16px;
-            overflow-y: auto;
-            height: calc(100% - 32px); /* Adjust as needed */
+            overflow-y: auto; /* Allow scrolling for the whole component */
+            height: 100%;
+          }
+          .container {
+            padding: 4px; /* A little padding around the list */
+            height: 100%;
+            box-sizing: border-box;
           }
           ul {
             list-style-type: none;
             padding: 0;
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px; /* Space between post cards */
           }
-          li {
-            padding: 8px 0;
-            border-bottom: 1px solid #ccc;
+          .no-posts-message {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            text-align: center;
+            color: #555;
+            font-family: 'Klee One', cursive;
           }
         </style>
-        <ul></ul>
+        <div class="container"></div>
       `;
-      this.listElement = this.shadowRoot.querySelector('ul');
+      this.container = this.shadowRoot.querySelector('.container');
     }
 
     this.handleMapBoundsChanged = this.handleMapBoundsChanged.bind(this);
@@ -52,7 +64,6 @@ class PostListComponent extends HTMLElement {
 
   async handleMapBoundsChanged(event: CustomEvent) {
     const bounds = event.detail.bounds;
-    console.log("Map bounds changed:", bounds);
     try {
       const posts = await queryJson({
         year: -1, // Or some other relevant year filter
@@ -78,20 +89,26 @@ class PostListComponent extends HTMLElement {
   }
 
   render() {
-    if (!this.listElement) return;
+    if (!this.container) return;
 
-    this.listElement.innerHTML = ''; // Clear existing list
+    if (this.posts.length === 0) {
+        this.container.innerHTML = `
+            <div class="no-posts-message">
+              表示する投稿がありません
+            </div>
+        `;
+    } else {
+        this.container.innerHTML = '<ul></ul>';
+        const listElement = this.container.querySelector('ul');
 
-    this.posts.forEach(post => {
-      const listItem = document.createElement('li');
-      // Using menu-post-card to display post information
-      const postCard = document.createElement('menu-post-card');
-      // The 'post' attribute on menu-post-card should probably take a Post object.
-      // Assuming it has a 'post' property that can be set.
-      (postCard as any).post = post;
-      listItem.appendChild(postCard);
-      this.listElement?.appendChild(listItem);
-    });
+        this.posts.forEach(post => {
+          const listItem = document.createElement('li');
+          const postCard = document.createElement('menu-post-card');
+          (postCard as any).post = post;
+          listItem.appendChild(postCard);
+          listElement?.appendChild(listItem);
+        });
+    }
   }
 }
 

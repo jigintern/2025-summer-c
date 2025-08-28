@@ -3,6 +3,7 @@ import { PostSubmission } from "../../types/postData.ts";
 class MenuComponent extends HTMLElement {
     private postList: HTMLElement | null = null;
     private commentsForm: HTMLElement & { post?: PostSubmission } | null = null;
+    private slider: HTMLElement | null = null;
 
     constructor() {
         super();
@@ -14,13 +15,10 @@ class MenuComponent extends HTMLElement {
 
         this.shadowRoot.innerHTML = `
             <style>
-                :host {
-                    position: relative;
-                    display: block;
-                }
                 .menu-wrapper {
                     position: fixed;
-                    display: block;
+                    display: flex;
+                    flex-direction: column;
                     top: 0;
                     left: 0;
                     height: calc(100vh - 50px);
@@ -31,19 +29,44 @@ class MenuComponent extends HTMLElement {
                     z-index: 1000;
                     padding: 16px;
                     box-sizing: border-box;
+                    gap: 16px; /* スライダーとメインコンテンツの間の隙間 */
+                }
+                #slider-container {
+                    flex-shrink: 0; /* スライダーが縮まないようにする */
+                }
+                .main-content {
+                    flex-grow: 1; /* メインコンテンツが残りのスペースを埋める */
+                    overflow-y: hidden; /* スクロールは子要素に任せる */
+                    position: relative;
+                }
+                /* スロットに入れられた要素がメインコンテンツ領域を埋めるようにする */
+                ::slotted(post-list-component),
+                ::slotted(comments-form) {
+                    display: block;
+                    height: 100%;
                 }
             </style>
             <div class="menu-wrapper">
-                <slot></slot>
+                <div id="slider-container"></div>
+                <div class="main-content">
+                    <slot></slot>
+                </div>
             </div>
         `;
 
-        // Slot change listener to get references to the components
         const slot = this.shadowRoot.querySelector('slot');
         slot?.addEventListener('slotchange', () => {
             this.postList = this.querySelector('post-list-component');
             this.commentsForm = this.querySelector('comments-form');
-            // Initially hide comments form
+            this.slider = this.querySelector('slider-component');
+
+            // スライダーコンポーネントを専用のコンテナに移動する
+            const sliderContainer = this.shadowRoot?.getElementById('slider-container');
+            if (this.slider && sliderContainer) {
+                sliderContainer.appendChild(this.slider);
+            }
+
+            // 初期状態ではコメントフォームを非表示にする
             if (this.commentsForm) {
                 this.commentsForm.style.display = 'none';
             }
