@@ -15,6 +15,22 @@ import { PostSubmission } from "../types/postData.ts";
 // Leaflet.jsから提供されるグローバルなLオブジェクト。
 declare const L: LeafletGlobal;
 
+
+/**
+ * HTML特殊文字をエスケープする関数
+ * @param {string} text - エスケープする文字列
+ * @returns {string} エスケープされた文字列
+ */
+function escapeHtml(text: string): string {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
 /**
  * Leafletマップを初期化し、指定されたHTML要素にマウントします。
  * @param {string} mapid - マップをマウントするHTML要素のID。
@@ -56,13 +72,12 @@ export function initMap(mapid: string, onShapeCreated: (layer: LeafletLayer) => 
 
         const decadeText = data.decade.gt === data.decade.lte ? `${data.decade.gt}` : `${data.decade.gt}-${data.decade.lte}`;
 
-		const content = `
-			<div class="info-box">
-				<p class="info-content">${data.comment.replace(/\n/g, '<br>')}</p>
-				<div class="info-sub-data"><span>${data.name}</span> <span> ${decadeText}</span></div>
-			</div>
-		`;
-
+        const content = `
+            <div class="info-box">
+                <p class="info-content">${escapeHtml(data.comment).replace(/\n/g, '<br>')}</p>
+                <div class="info-sub-data"><span>${escapeHtml(data.name)}</span> <span> ${decadeText}</span></div>
+            </div>
+            `       ;
 		geoJsonLayer.bindTooltip(content, {
 			permanent: true,
 			direction: 'center',
