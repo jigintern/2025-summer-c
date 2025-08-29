@@ -1,11 +1,15 @@
-# [ここにタイトル]
+# おもかげ地図
 ![deno compatibility](https://shield.deno.dev/deno/v2.4.4)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
 ## 概要
+ビジョン: "誰かの「いつ、どこで、何があったか」を紡ぐ地図"  
+ターゲット: "地域歴史の授業時間の小学3,4年生"  
+推奨環境: PC (Chrome)  
 
-地図上に思い出を残しておけるアプリです。
+思い出のエピソードを地図上の領域の情報とともに投稿できるプラットフォームです。  
+投稿される方は、思い出深い場所、今は存在しない建物の場所などとともにエピソードを共有いただけます。  
 
-思い出を領域として地図上に投稿・表示ができます。
 
 ## ローカルの実行コマンド
 
