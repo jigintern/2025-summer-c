@@ -22,27 +22,14 @@ declare const L: LeafletGlobal;
  * @returns {string} エスケープされた文字列
  */
 function escapeHtml(text: string): string {
-    // 最初に<potato-hash>タグを一時的なマーカーに置き換える
-    const potatoPlaceholder = "___POTATO_HASH_PLACEHOLDER___";
-    const closingPotatoPlaceholder = "___CLOSING_POTATO_HASH_PLACEHOLDER___";
-
-    let processedText = text
-        .replace(/<poteto-hash>/g, potatoPlaceholder)
-        .replace(/<\/poteto-hash>/g, closingPotatoPlaceholder);
-
-    // 通常のHTMLエスケープを行う
-    processedText = processedText
+    return text
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
-
-    // プレースホルダーを元の<potato-hash>タグに戻す
-    return processedText
-        .replace(new RegExp(potatoPlaceholder, 'g'), "<poteto-hash>")
-        .replace(new RegExp(closingPotatoPlaceholder, 'g'), "</poteto-hash>");
 }
+
 
 /**
  * Leafletマップを初期化し、指定されたHTML要素にマウントします。
