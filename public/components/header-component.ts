@@ -23,8 +23,7 @@ const content: string = `
     }
     </style>
     <header>
-    
-        思い出マップ(仮)
+    おもかげ地図
     </header>
    
       `;
