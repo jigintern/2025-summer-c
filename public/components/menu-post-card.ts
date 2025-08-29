@@ -30,6 +30,12 @@ class MenuPostCard extends HTMLElement {
     });
   }
 
+  private get decadeText(): string {
+      if (!this._post) return '';
+      const { gt, lte } = this._post.decade;
+      return gt === lte ? `${gt}` : `${gt}-${lte}`;
+  }
+
   render() {
     if (!this.shadowRoot) return;
 
@@ -60,7 +66,7 @@ class MenuPostCard extends HTMLElement {
       <div class="post-card">
         ${this._post ? `
           <h3>${this._post.name}</h3>
-          <p class="decade">${this._post.decade.gt}-${this._post.decade.lte}</p>
+          <p class="decade">${this.decadeText}</p>
           <p>${this._post.comment}</p>
         ` : `
           <p>No post data</p>

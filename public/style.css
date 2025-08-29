@@ -61,4 +61,23 @@
     justify-content: space-between;
 }
 
+/* Leaflet Zoom Control Retro Style */
+.leaflet-control-zoom-in, .leaflet-control-zoom-out {
+    background-color: #c0392b !important; /* --color-accent-red */
+    color: #fffdfa !important; /* --color-paper */
+    border: 2px solid #a03024 !important; /* --color-accent-red-dark */
+    border-radius: 0 !important;
+    width: 30px !important;
+    height: 30px !important;
+    line-height: 26px !important;
+    font-size: 1.5em !important;
+    font-weight: bold !important;
+}
 
+.leaflet-control-zoom-in:hover, .leaflet-control-zoom-out:hover {
+    background-color: #a03024 !important; /* --color-accent-red-dark */
+}
+
+.leaflet-control-zoom-in {
+    border-bottom: 1px solid #a03024 !important;
+}

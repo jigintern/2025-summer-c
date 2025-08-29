@@ -53,18 +53,37 @@ export function initMap(mapid: string, onShapeCreated: (layer: LeafletLayer) => 
       }
     });
 
+        const decadeText = data.decade.gt === data.decade.lte ? `${data.decade.gt}` : `${data.decade.gt}-${data.decade.lte}`;
+
 		const content = `
 			<div class="info-box">
 				<p class="info-content">${data.comment.replace(/\n/g, '<br>')}</p>
-				<div class="info-sub-data"><span>${data.name}</span> <span> ${data.decade.gt}-${data.decade.lte}</span></div>
+				<div class="info-sub-data"><span>${data.name}</span> <span> ${decadeText}</span></div>
 			</div>
 		`;
 
 		geoJsonLayer.bindTooltip(content, {
 			permanent: true,
 			direction: 'center',
-			className: 'info-tooltip'
+			className: 'info-tooltip',
+            interactive: true // ツールチップをクリック可能にする
 		});
+
+        // ツールチップ（ラベル）にもクリックイベントを追加
+        geoJsonLayer.on('add', function () {
+            const tooltip = this.getTooltip();
+            if (tooltip) {
+                L.DomEvent.on(tooltip.getElement(), 'click', (e) => {
+                    L.DomEvent.stopPropagation(e); // 地図本体へのクリックイベントの伝播を停止
+                    const event = new CustomEvent('show-comments', {
+                        detail: { post: data },
+                        bubbles: true,
+                        composed: true
+                    });
+                    window.dispatchEvent(event);
+                });
+            }
+        });
 
 		this.markerLayer.addLayer(geoJsonLayer);
 		return geoJsonLayer;

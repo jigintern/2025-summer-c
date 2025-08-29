@@ -222,7 +222,7 @@ class CommentForm extends HTMLElement {
             commentsList.innerHTML = '';
             comments.forEach((comment: Thread) => {
                 const date = new Date(comment.created_at);
-                const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+                const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
                 const commentElement = document.createElement('div');
                 commentElement.className = 'comment-item';
                 commentElement.innerHTML = `
