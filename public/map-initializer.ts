@@ -57,30 +57,49 @@ export function initMap(mapid: string, onShapeCreated: (layer: LeafletLayer) => 
   /**
    * マップに情報ボックス（図形とツールチップ）を追加するカスタムメソッド。
    * @param data - 表示する情報を含むデータオブジェクト。
+   * @param color - 色
    * @returns {LeafletLayer} 作成されたレイヤー。
    */
-	map.addInfoBox = function(data: PostSubmission): LeafletLayer {
+	map.addInfoBox = function(data: PostSubmission, color: string = "#0033FF"): LeafletLayer {
     // GeoJSONからレイヤーを作成
 		const geoJsonLayer = L.geoJSON(data.geometry, {
       style: {
-        color: "#0033ff",
+        color: color,
         weight: 2,
         fillOpacity: 0.1
       }
     });
 
+        const decadeText = data.decade.gt === data.decade.lte ? `${data.decade.gt}` : `${data.decade.gt}-${data.decade.lte}`;
+
         const content = `
-            <script type="module" src="https://uchuukaeru.github.io/PotetoHashJs/PotetoHash.js"></script>
             <div class="info-box">
                 <p class="info-content">${escapeHtml(data.comment).replace(/\n/g, '<br>')}</p>
-                <div class="info-sub-data"><span>${escapeHtml(data.name)}</span> <span> ${data.decade.gt}-${data.decade.lte}</span></div>
+                <div class="info-sub-data"><span>${escapeHtml(data.name)}</span> <span> ${decadeText}</span></div>
             </div>
             `       ;
 		geoJsonLayer.bindTooltip(content, {
 			permanent: true,
 			direction: 'center',
-			className: 'info-tooltip'
+			className: 'info-tooltip',
+            interactive: true // ツールチップをクリック可能にする
 		});
+
+        // ツールチップ（ラベル）にもクリックイベントを追加
+        geoJsonLayer.on('add', function () {
+            const tooltip = this.getTooltip();
+            if (tooltip) {
+                L.DomEvent.on(tooltip.getElement(), 'click', (e) => {
+                    L.DomEvent.stopPropagation(e); // 地図本体へのクリックイベントの伝播を停止
+                    const event = new CustomEvent('show-comments', {
+                        detail: { post: data },
+                        bubbles: true,
+                        composed: true
+                    });
+                    window.dispatchEvent(event);
+                });
+            }
+        });
 
 		this.markerLayer.addLayer(geoJsonLayer);
 		return geoJsonLayer;
