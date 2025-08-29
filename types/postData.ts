@@ -17,6 +17,7 @@ export interface Thread {
  * 投稿するデータの型
  */
 export interface PostSubmission {
+    id: string;
 	name: string;
 	geometry: GeoJSON;
 	decade: Decade;

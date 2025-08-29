@@ -158,7 +158,7 @@ const content: string = `
             <form onsubmit="return false;">
                 <div class="field-row-stacked">
                     <label for="posterName">御芳名</label>
-                    <input id="posterName" type="text" placeholder="お名前">
+                    <input id="posterName" type="text" placeholder="名無しの権兵衛">
                 </div>
 
                 <div class="field-row-stacked">
@@ -221,39 +221,60 @@ class PostForm extends HTMLElement {
 	// 外部からはアクセスできないメソッド.
 	private _submit() {
 		if (!this.shadowRoot) return; // DOMの存在確認をしておく
-		// 接続されたDOMからフォームのinputを取得して値を取得
-		const posterName =
-			(this.shadowRoot.getElementById('posterName') as HTMLInputElement)
-				.value;
-            const eraGt = (this.shadowRoot.getElementById('era-gt') as HTMLInputElement).value;
-            const eraLte = (this.shadowRoot.getElementById('era-lte') as HTMLInputElement).value;
-        
-        // Validate that both eraGt and eraLte are non-empty and numeric
-        if (
-            !eraGt || !eraLte ||
-            isNaN(Number(eraGt)) || isNaN(Number(eraLte))
-        ) {
-            alert('時代の範囲（開始年と終了年）を正しく入力してください。');
+
+        const posterNameInput = this.shadowRoot.getElementById('posterName') as HTMLInputElement;
+        let posterName = posterNameInput.value.trim();
+        const bodyText = (this.shadowRoot.getElementById('bodyText') as HTMLTextAreaElement).value.trim();
+        const eraGtInput = this.shadowRoot.getElementById('era-gt') as HTMLInputElement;
+        const eraLteInput = this.shadowRoot.getElementById('era-lte') as HTMLInputElement;
+
+        // --- Validation ---
+        if (!bodyText) {
+            alert('「内容」は必須です。');
             return;
         }
+        if (!posterName) {
+            posterName = posterNameInput.placeholder;
+        }
 
-        // 年代の範囲チェック（1900〜2100）
-        if (Number(eraGt) < 1900 || Number(eraGt) > 2100 ||
-            Number(eraLte) < 1900 || Number(eraLte) > 2100) {
+        const eraLteStr = eraLteInput.value;
+        let eraGtStr = eraGtInput.value;
+
+        if (!eraLteStr) {
+            alert('「いつまで」の年は必須です。');
+            return;
+        }
+        if (isNaN(Number(eraLteStr))) {
+            alert('「いつまで」の年は数字で入力してください。');
+            return;
+        }
+        const lte = Number(eraLteStr);
+        if (lte < 1900 || lte > 2100) {
             alert('年代は1900年から2100年の間で入力してください。');
             return;
         }
 
-        // 順序チェック（開始年が終了年より後にならないようにする）
-        if (Number(eraGt) > Number(eraLte)) {
+        let gt = lte;
+        if (eraGtStr) {
+            if (isNaN(Number(eraGtStr))) {
+                alert('「いつから」の年を正しく入力してください。');
+                return;
+            }
+            gt = Number(eraGtStr);
+            if (gt < 1900 || gt > 2100) {
+                alert('年代は1900年から2100年の間で入力してください。');
+                return;
+            }
+        } else {
+            gt = lte;
+        }
+
+        if (gt > lte) {
             alert('開始年は終了年より前の年を入力してください。');
             return;
         }
 
-        const era = `${eraGt}-${eraLte}`;
-		const bodyText =
-			(this.shadowRoot.getElementById('bodyText') as HTMLTextAreaElement)
-				.value;
+        const era = `${gt}-${lte}`;
 
 		this.dispatchEvent( // 渡されたcustomEventをこのコンポーネントで発火する
 			new CustomEvent('submit', { // submitという名前の独自イベントを作成
@@ -296,4 +317,3 @@ class PostForm extends HTMLElement {
 }
 
 customElements.define('post-form', PostForm); // 定義する
-''

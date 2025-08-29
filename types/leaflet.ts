@@ -47,6 +47,8 @@ export interface LeafletMap {
     getSize(): any;
 
     unproject(centerPixel: any, zoom: number): any;
+
+    setMaxBounds(worldBounds: any): void;
 }
 
 /** L.LatLngの最小限の定義 */
@@ -61,6 +63,14 @@ export interface LeafletLatLngBounds {
 	getNorthEast(): LeafletLatLng;
 
     getNorthWest(): LeafletLatLng;
+
+    getNorth(): any;
+
+    getSouth(): any;
+
+    getEast(): any;
+
+    getWest(): any;
 }
 
 // 一般的なイベント
@@ -112,4 +122,8 @@ export interface LeafletGlobal {
     geoJSON(geojson?: GeoJSON, options?: object): LeafletLayerGroup;
 
     point(number: number, number2: number): any;
+
+    latLngBounds(latLng: any, latLng2: any): any;
+
+    latLng(number: number, number2: number): any;
 }
