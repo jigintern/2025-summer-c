@@ -15,10 +15,15 @@ export let allPosts: PostSubmission[] = []; // すべての投稿データをこ
 
 // Leaflet.jsから提供されるグローバルなLオブジェクト。
 declare const L: LeafletGlobal;
+// ================== 定数定義 ==================
 const drawPolygonButton = document.getElementById(
     'draw-polygon',
 ) as HTMLButtonElement;
 
+const colors = [
+    "#8A8635","#FF894F","#FFCB61","#0A97B0",
+    "#A02334","#347433","#6A0066", "#DA498D"
+];
 
 // ================== DOM要素取得 ==================
 
@@ -30,6 +35,14 @@ const postForm = document.getElementById('infoModal') as HTMLElement & {
 };
 
 // ================== 関数定義 ==================
+/**
+ * 色をランダムに決めます
+ */
+const colorsSelect : string = (data: PostSubmission) => {
+    const index = data["id"].charCodeAt(25) % colors.length;
+    console.log(index);
+    return colors[index];
+};
 
 /**
  * サーバーから地図データを非同期で読み込み、マップを再描画します。
@@ -41,7 +54,7 @@ async function loadAndRenderData(): Promise<void> {
 
         map.markerLayer.clearLayers();
         posts.forEach(post => {
-            const layer = map.addInfoBox(post);
+            const layer = map.addInfoBox(post,colorsSelect(post));
             layer.on('click', () => {
                 const event = new CustomEvent('show-comments', {
                     detail: { post },
@@ -143,7 +156,7 @@ async function handleShapeCreated(layer: LeafletLayer): Promise<boolean> {
                 const newPost: PostSubmission = await response.json();
                 allPosts.push(newPost); // 新しく追加したデータもallPostsに追加
 
-                const postLayer = map.addInfoBox(newPost);
+                const postLayer = map.addInfoBox(newPost,colorsSelect(newPost));
                 postLayer.on('click', () => {
                     const event = new CustomEvent('show-comments', {
                         detail: { post: newPost },
@@ -185,7 +198,7 @@ export function filterMapByDecade(startYear: number, endYear: number): void {
     });
 
     filteredPosts.forEach(post => {
-        const layer = map.addInfoBox(post);
+        const layer = map.addInfoBox(post,colorsSelect(post));
         layer.on('click', () => {
             const event = new CustomEvent('show-comments', {
                 detail: { post },
@@ -245,7 +258,7 @@ const setupZoomBasedVisibility = () => {
     };
 
     map.on('zoomend', toggleInfoBoxesVisibility);
-    setTimeout(toggleInfoBoxesVisibility, 500); 
+    setTimeout(toggleInfoBoxesVisibility, 500);
 };
 
 window.addEventListener('show-comments', ((event: CustomEvent) => {
