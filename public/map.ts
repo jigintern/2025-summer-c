@@ -20,8 +20,10 @@ const drawPolygonButton = document.getElementById(
     'draw-polygon',
 ) as HTMLButtonElement;
 
-const colors = ["#EA6B6F","#FF894F","#FFCB61","#77BEF0"];
-const border = [4895,4896,4897];
+const colors = [
+    "#8A8635","#FF894F","#FFCB61","#0A97B0",
+    "#A02334","#347433","#6A0066", "#DA498D"
+];
 
 // ================== DOM要素取得 ==================
 
@@ -34,31 +36,12 @@ const postForm = document.getElementById('infoModal') as HTMLElement & {
 
 // ================== 関数定義 ==================
 /**
- * 領域の大きさから色を定義します
- * @param data - データ（領域を拾う）
+ * 色をランダムに決めます
  */
-const colorsSelect : string = (data:PostSubmission) => {
-    const con = data["geometry"]["geometry"]["coordinates"];
-    let minX = 0,minY = 0,maxX = 0,maxY = 0;
-    for (let i = 0; i < con.length; i++) {
-        const co = con[i];
-        for (let j = 0; j < co.length; j++) {
-            const c = co[j];
-            const dataX = c[0];
-            const dataY = c[1];
-            minX = Math.min(minX,dataX);
-            minY = Math.min(minY,dataY);
-            maxX = Math.max(maxX,dataX);
-            maxY = Math.max(maxY,dataY);
-        }
-    }
-    const s : number = (maxX - minX) * (maxY - minY);
-    for (let i = 0; i < border.length-1; i++) {
-        if(border[i] > s){
-            return colors[i];
-        }
-    }
-    return colors[colors.length-1];
+const colorsSelect : string = (data: PostSubmission) => {
+    const index = data["id"].charCodeAt(25) % colors.length;
+    console.log(index);
+    return colors[index];
 };
 
 /**
