@@ -5,7 +5,8 @@
     "@types/geojson": "npm:@types/geojson@^7946.0.16",
     "leaflet": "npm:leaflet@^1.9.4",
     "egmap": "./lib/egmap.ts",
-    "leaflet-draw": "npm:leaflet-draw@^1.0.4"
+    "leaflet-draw": "npm:leaflet-draw@^1.0.4",
+    "lit": "npm:lit@^3.3.1"
   },
   "tasks": {
     "start": "deno bundle --platform=browser --minify public/main.ts -o public/main.js && deno run --watch --allow-net --allow-read --allow-write --allow-run --allow-env --unstable-kv main.ts"

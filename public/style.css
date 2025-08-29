@@ -4,6 +4,8 @@
     --background-color: #ECDCBF;
     --background-color-light: #ffeadb;
     --accent-color: #9B3B32;
+    --wood-color: #6d2600;
+    
     --accent-color-deep: #803028;
     --sub-color: #687786;
     --color-background: #f5e8d7; /* 色褪せた紙の色 */
@@ -16,11 +18,6 @@
     
 }
 
-.klee-one-regular {
-    font-family: "Klee One", cursive;
-    font-weight: 400;
-    font-style: normal;
-}
 
 
 
@@ -62,4 +59,25 @@
 .info-sub-data {
     display: flex;
     justify-content: space-between;
+}
+
+/* Leaflet Zoom Control Retro Style */
+.leaflet-control-zoom-in, .leaflet-control-zoom-out {
+    background-color: #c0392b !important; /* --color-accent-red */
+    color: #fffdfa !important; /* --color-paper */
+    border: 2px solid #a03024 !important; /* --color-accent-red-dark */
+    border-radius: 0 !important;
+    width: 30px !important;
+    height: 30px !important;
+    line-height: 26px !important;
+    font-size: 1.5em !important;
+    font-weight: bold !important;
+}
+
+.leaflet-control-zoom-in:hover, .leaflet-control-zoom-out:hover {
+    background-color: #a03024 !important; /* --color-accent-red-dark */
+}
+
+.leaflet-control-zoom-in {
+    border-bottom: 1px solid #a03024 !important;
 }
