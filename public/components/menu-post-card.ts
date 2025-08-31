@@ -35,6 +35,11 @@ class MenuPostCard extends HTMLElement {
       const { gt, lte } = this._post.decade;
       return gt === lte ? `${gt}` : `${gt}-${lte}`;
   }
+    private escapeHTML(html: string): string {
+        const element = document.createElement('div');
+        element.textContent = html;
+        return element.innerHTML;
+    }
 
   render() {
     if (!this.shadowRoot) return;
@@ -65,9 +70,9 @@ class MenuPostCard extends HTMLElement {
       </style>
       <div class="post-card">
         ${this._post ? `
-          <h3>${this._post.name}</h3>
-          <p class="decade">${this.decadeText}</p>
-          <p>${this._post.comment}</p>
+          <h3>${this.escapeHTML(this._post.name)}</h3>
+          <p class="decade">${this.escapeHTML(this.decadeText)}</p>
+          <p>${this.escapeHTML(this._post.comment)}</p>
         ` : `
           <p>No post data</p>
         `}
