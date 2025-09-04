@@ -1,0 +1,48 @@
+<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="data:">
+<title>投稿一覧</title></head><body>
+<h1>投稿一覧</h1>
+
+<!--
+import from <input id="inp_baseurl" x-value="https://taisukef-2025-summer-c.deno.dev"><br>
+-->
+<button id="btn_query">query</button>
+
+<div id=div_list></div>
+
+<hr>
+<div>APP: <a href=https://github.com/jigintern/2025-summer-c/>「おもかげ地図」 - jigインターン2025 / GitHub</a></div>
+
+<script type="module">
+import { CSV } from "https://js.sabae.cc/CSV.js";
+
+btn_query.onclick = async () => {
+    const baseurl = window.inp_baseurl?.value ?? "";
+    const url = baseurl + "/query-json?year=-1&x=-180&y=-90&x2=180&y2=90";
+    const list = await (await fetch(url)).json();
+    const list2 = list.map(i => {
+        return [i.id, i.created_at, i.name, i.decade.lte, i.decade.gt, i.comment];
+    });
+    list2.unshift(["id", "投稿日", "御芳名", "いつから", "いつまで", "内容"]);
+    div_list.appendChild(CSV.makeTable(list2));
+
+    const ids = div_list.querySelectorAll(":nth-child(1 of td)");
+    for (const id of ids) {
+        id.onclick = () => window.open("./#" + id.textContent, "_blank");
+    }
+};
+
+</script>
+
+<style>
+td, th {
+    border: 1px solid black;
+    padding: 0 0.2em;
+}
+table {
+    border-collapse: collapse;
+    margin: .5em 0;
+}
+</style>
+
+</body>
+</html>

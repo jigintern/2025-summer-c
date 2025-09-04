@@ -67,6 +67,20 @@ async function loadAndRenderData(): Promise<void> {
 
         // データ読み込み後に表示領域の投稿を更新
         updateShowingPosts();
+
+        // ハッシュで指定されていたらその投稿を表示
+        const id = location.hash.substring(1);
+        if (id) {
+            const post = posts.find(i => i.id == id);
+            if (post) {
+                const event = new CustomEvent('show-comments', {
+                    detail: { post },
+                    bubbles: true,
+                    composed: true
+                });
+                window.dispatchEvent(event);
+            }
+        }
     } catch (error) {
         console.error("Failed to load initial data:", error);
     }
@@ -266,6 +280,7 @@ window.addEventListener('show-comments', ((event: CustomEvent) => {
     if (post && post.geometry) {
         const bounds = L.geoJSON(post.geometry).getBounds();
         map.fitBounds(bounds);
+        location.hash = post.id;
     }
 }) as EventListener);
 
