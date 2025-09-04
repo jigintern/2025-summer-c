@@ -62,3 +62,9 @@ xが経度　、yが緯度です。
 
 ### POST /post-json
 bodyで上記の領域データを持たせると、内容がデータベースに保存されます。
+
+### GET /get-comments?id=
+投稿に対するコメントを取得（※query-jsonでコメント付きで取得できる）
+
+### POST /post-comments
+id, comment, created_at を含むJSONを送ると、コメントがデータベースに保存されます。
