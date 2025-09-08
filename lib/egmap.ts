@@ -45,10 +45,17 @@ export interface MapWithIconLayer extends L.Map {
 export const initMap = (mapid: string): MapWithIconLayer => {
     const map = L.map(mapid) as MapWithIconLayer; // 指定されたIDの要素にLeafletマップオブジェクトを生成
 
+    const layer = "https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png";
+    const attribution = '<a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>';
+    const maxNativeZoom = 18;
+
     // OpenStreetMapから地図タイルを取得し、マップレイヤーとして追加
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	L.tileLayer(layer, {
         // 地図の著作権情報を設定します
-        attribution: '© <a href="http://osm.org/copyright">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+        attribution,
+        maxNativeZoom,
+        maxZoom: 22,
+        minZoom: 5,
     }).addTo(map); // 作成したタイルレイヤーをマップに追加
 
     // アイコン関連の初期設定

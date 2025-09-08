@@ -43,9 +43,13 @@ export function initMap(mapid: string, onShapeCreated: (layer: LeafletLayer) => 
 		center: [35.943, 136.188]
 	});
 
-	L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    maxNativeZoom: 19,
+  const layer = "https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png";
+  const attribution = '<a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>';
+  const maxNativeZoom = 18;
+
+	L.tileLayer(layer, {
+    attribution,
+    maxNativeZoom,
     maxZoom: 22,
     minZoom: 5,
   }).addTo(map);
