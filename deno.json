@@ -9,7 +9,15 @@
     "lit": "npm:lit@^3.3.1"
   },
   "tasks": {
-    "start": "deno bundle --platform=browser --minify public/main.ts -o public/main.js && deno run --watch --allow-net --allow-read --allow-write --allow-run --allow-env --unstable-kv main.ts"
+    "compile" : {
+      "command": "deno bundle --platform=browser --minify public/main.ts -o public/main.js",
+      "description": "tsをjsにコンパイルする"
+    },
+    "start": {
+      "command": "deno run --watch --allow-net --allow-read --allow-write --allow-run --allow-env --unstable-kv main.ts",
+      "dependencies": ["compile"],
+      "description": "アプリケーションを実行する"
+    }
   },
   "compilerOptions": {
     "lib": [
